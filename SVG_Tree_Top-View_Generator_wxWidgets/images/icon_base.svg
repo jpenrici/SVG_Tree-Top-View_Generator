@@ -27,17 +27,170 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="4.609375"
-     inkscape:cx="73.437289"
-     inkscape:cy="32.433899"
+     inkscape:zoom="4"
+     inkscape:cx="78.625"
+     inkscape:cy="29.625"
      inkscape:current-layer="g1" />
   <g
      inkscape:groupmode="layer"
      inkscape:label="Image"
      id="g1">
     <g
+       id="g18"
+       inkscape:label="icon_line9">
+      <path
+         id="polygon11"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.35550268,0,0,0.35550268,154.55189,60.966577)"
+         d="M -7,-19 0,-1 18,-8 -30,-40 0,-1 49,-7 Z" />
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-19"
+         width="31.507692"
+         height="31.507692"
+         x="142.17531"
+         y="37.924953"
+         inkscape:label="rect32px" />
+    </g>
+    <g
+       id="g20"
+       inkscape:label="icon_line8">
+      <path
+         id="polygon10"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,113.23957,67.908295)"
+         d="M 1,-50 0,-1 33,-38 22,-45 Z" />
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-6"
+         width="31.507692"
+         height="31.507692"
+         x="106.69302"
+         y="37.924953"
+         inkscape:label="rect32px" />
+    </g>
+    <g
+       id="g19"
+       inkscape:label="icon_line7">
+      <path
+         id="polygon9"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,85.290517,60.933042)"
+         d="m -11,-23 -7,6 18,16 H 24 L 23,-8 13,-22 5,-25 Z" />
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-22"
+         width="31.507692"
+         height="31.507692"
+         x="71.210732"
+         y="37.924953"
+         inkscape:label="rect32px" />
+    </g>
+    <g
+       id="g17"
+       inkscape:label="icon_line6">
+      <path
+         id="polygon8"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.43649178,0,0,0.43649178,45.589686,64.809263)"
+         d="M 10,-49 9,-24 -6,-50 5,-15 -19,-47 0,-1 46,-20 5,-15 39,-31 9,-24 26,-43 12,-31 Z" />
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-2"
+         width="31.507692"
+         height="31.507692"
+         x="35.728443"
+         y="37.924953"
+         inkscape:label="rect32px" />
+    </g>
+    <g
+       id="g12"
+       inkscape:label="icon_line5">
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-18"
+         width="31.507692"
+         height="31.507692"
+         x="0.24615383"
+         y="37.924953"
+         inkscape:label="rect32px" />
+      <path
+         id="polygon7"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,6.7928858,67.908056)"
+         d="M 11,-28 14,-48 7,-19 6,-50 3,-10 1,-50 0,-1 33,-38 3,-10 30,-40 7,-19 22,-45 Z" />
+    </g>
+    <g
+       id="g16"
+       inkscape:label="icon_line4">
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-36"
+         width="31.507692"
+         height="31.507692"
+         x="141.63443"
+         y="0.24615383"
+         inkscape:label="rect32px" />
+      <path
+         id="polygon6"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,151.01804,30.229444)"
+         d="M 6,-50 0,-1 30,-40 11,-28 Z" />
+    </g>
+    <g
+       id="g15"
+       inkscape:label="icon_line3">
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-1"
+         width="31.507692"
+         height="31.507692"
+         x="106.18648"
+         y="0.24615383"
+         inkscape:label="rect32px" />
+      <path
+         id="polygon5"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,118.3132,29.392437)"
+         d="M 0,-1 15,-3 22,-25 18,-47 1,-33 -9,-13 Z" />
+    </g>
+    <g
+       id="g14"
+       inkscape:label="icon_line2">
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3-3"
+         width="31.507692"
+         height="31.507692"
+         x="70.738525"
+         y="0.24615383"
+         inkscape:label="rect32px" />
+      <path
+         id="polygon4"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,83.423267,29.392429)"
+         d="M 18,-47 -7,-19 0,-1 18,-8 Z" />
+    </g>
+    <g
+       id="g13"
+       inkscape:label="icon_line1">
+      <rect
+         style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+         id="rect3"
+         width="31.507692"
+         height="31.507692"
+         x="35.290573"
+         y="0.24615383"
+         inkscape:label="rect32px" />
+      <path
+         id="polygon3"
+         style="fill:#008000;fill-rule:evenodd;stroke:#008000;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1;stroke-opacity:1"
+         transform="matrix(0.55801865,0,0,0.55801865,46.022251,29.392441)"
+         d="M 15,-20 18,-47 3,-25 0,-1 Z" />
+    </g>
+    <g
        id="g2"
-       inkscape:label="icon_line">
+       inkscape:label="icon_line0">
       <rect
          style="font-variation-settings:normal;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#445500;stroke-width:0.492308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
          id="rect1"

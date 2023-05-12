@@ -59,14 +59,14 @@ private:
     };
 
     wxBitmapButton     *bmpBtn[10];
-    wxBoxSizer         *hBox[2];
+    wxBoxSizer         *hBox[3];
     wxBoxSizer         *vBox[2];
     wxMenu             *menu[3];
     wxMenuBar          *menuBar;
     wxSlider           *slider[4];
     wxStaticText       *label[4];
     wxStatusBar        *statusBar;
-    wxColourPickerCtrl *colourPickerCtrl[2];
+    wxColourPickerCtrl *colourPickerCtrl[3];
 
     DrawingArea    *drawingArea;
 

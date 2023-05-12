@@ -12,8 +12,16 @@ set(SOURCES
 )
 
 set(RESOURCE_FILES
-    images/tree-04.png
-    images/icon_line.png
+    images/icon_line0.png
+    images/icon_line1.png
+    images/icon_line2.png
+    images/icon_line3.png
+    images/icon_line4.png
+    images/icon_line5.png
+    images/icon_line6.png
+    images/icon_line7.png
+    images/icon_line8.png
+    images/icon_line9.png
 )
 
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_BINARY_DIR}/Resources)
