@@ -13,6 +13,7 @@ set(SOURCES
 
 set(RESOURCE_FILES
     images/tree-04.png
+    images/icon_line.png
 )
 
 file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_BINARY_DIR}/Resources)

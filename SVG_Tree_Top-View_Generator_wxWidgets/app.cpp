@@ -8,7 +8,7 @@ bool App::OnInit()
         return false;
     }
 
-    AppFrame *frame = new AppFrame("wxWidgtes App to Draw Trees", wxSize(960, 600));
+    AppFrame *frame = new AppFrame("wxWidgtes App to Draw Trees", wxSize(960, 650));
     frame->Show();
 
     SetTopWindow(frame);
@@ -65,6 +65,11 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     label[2]->SetFont(font);
     label[3]->SetFont(font);
 
+    label[0]->SetToolTip("Angle of the leaf on the branch");
+    label[1]->SetToolTip("Leaf lenght");
+    label[2]->SetToolTip("Minimum distance between sheets");
+    label[3]->SetToolTip("Branch thickness");
+
     // Panel
     drawingArea = new DrawingArea(this);
     drawingArea->SetBackgroundColour(*wxWHITE);
@@ -87,10 +92,13 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     colourPickerCtrl[1] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 1,
                                                  wxColor(150, 75, 0, 255));
 
+    colourPickerCtrl[0]->SetToolTip("Leaf color");
+    colourPickerCtrl[1]->SetToolTip("Branch color");
+
     colourPickerCtrl[0]->Bind(wxEVT_COLOURPICKER_CHANGED, &AppFrame::OnChangeColor, this);
     colourPickerCtrl[1]->Bind(wxEVT_COLOURPICKER_CHANGED, &AppFrame::OnChangeColor, this);
     drawingArea->SetColor(0, colourPickerCtrl[0]->GetColour(), colourPickerCtrl[0]->GetColour());
-    drawingArea->SetColor(0, colourPickerCtrl[1]->GetColour(), colourPickerCtrl[1]->GetColour());
+    drawingArea->SetColor(1, colourPickerCtrl[1]->GetColour(), colourPickerCtrl[1]->GetColour());
 
     // Box and Controllers
     vBox[0] = new wxBoxSizer(wxVERTICAL);
@@ -100,16 +108,16 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[1] = new wxBoxSizer(wxHORIZONTAL);
 
     std::vector<std::string> icons {
-        "Resources/tree-04.png", "Resources/tree-04.png", "Resources/tree-04.png",
-        "Resources/tree-04.png", "Resources/tree-04.png", "Resources/tree-04.png",
-        "Resources/tree-04.png", "Resources/tree-04.png", "Resources/tree-04.png",
-        "Resources/tree-04.png", "Resources/tree-04.png"
+        "icon_line.png", "icon_line.png", "icon_line.png", "icon_line.png", "icon_line.png",
+        "icon_line.png", "icon_line.png", "icon_line.png", "icon_line.png", "icon_line.png",
     };
     for (unsigned i = 0; i < 10; ++i) {
         bmpBtn[i] = new wxBitmapButton(this, ID_wxBitmapButton + i,
-                                       wxBitmap(icons[i], wxBITMAP_TYPE_ANY));
+                                       wxBitmap("Resources/" + icons[i],
+                                                wxBITMAP_TYPE_ANY));
         bmpBtn[i]->SetSize(bmpBtn[i]->GetBestSize());
         bmpBtn[i]->SetName(std::to_string(i));
+        bmpBtn[i]->SetToolTip(icons[i]);
         bmpBtn[i]->Bind(wxEVT_BUTTON, &AppFrame::OnBitmapButtonClicked, this);
         vBox[1]->Add(bmpBtn[i], 0, 0, 0, 0);
     }
@@ -501,6 +509,7 @@ void DrawingArea::SetValue(unsigned number, unsigned value)
 void DrawingArea::DrawShape(wxDC& dc, unsigned int shape,
                             wxPoint pos, unsigned int lenght, unsigned int angle)
 {
+    std::vector<wxPoint> points;
     if (shape == 1) {
     } else if (shape == 2) {
     } else if (shape == 3) {
@@ -512,6 +521,9 @@ void DrawingArea::DrawShape(wxDC& dc, unsigned int shape,
     } else if (shape == 9) {
     } else {
         // Line
-        dc.DrawLine(pos, pos + angularCoordinate(pos.x, pos.y, lenght, angle));
+        points = {pos, pos + angularCoordinate(pos.x, pos.y, lenght, angle)};
+    }
+    if (!points.empty()) {
+        dc.DrawSpline(points.size(), &points[0]);
     }
 }

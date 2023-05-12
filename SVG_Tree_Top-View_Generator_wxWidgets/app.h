@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "svg.h"
+#include "svg.h" // custom generator
 
 inline wxPoint angularCoordinate(double x0, double y0, unsigned lenght, unsigned angle)
 {
