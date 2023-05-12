@@ -76,10 +76,10 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     drawingArea->SetShape(0); // Only lines
 
     // Slider
-    slider[0] = new wxSlider(this, ID_wxSlider + 0, 60, 0, 100);   // shapeAngle
+    slider[0] = new wxSlider(this, ID_wxSlider + 0, 50, 0, 100);   // shapeAngle
     slider[1] = new wxSlider(this, ID_wxSlider + 1, 50, 0, 100);   // shapeLenght
     slider[2] = new wxSlider(this, ID_wxSlider + 2, 50, 0, 100);   // limitLength
-    slider[3] = new wxSlider(this, ID_wxSlider + 3, 10, 5, 100);   // lineTickness
+    slider[3] = new wxSlider(this, ID_wxSlider + 3, 20, 0, 100);   // lineTickness
 
     for (unsigned i = 0; i < 4; ++i) {
         slider[i]->Bind(wxEVT_SLIDER, &AppFrame::OnChangeSlider, this, ID_wxSlider + i);
@@ -88,11 +88,11 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     // ColourPickerCtrl
     colourPickerCtrl[0] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 0,
-                                                 wxColor(50, 200, 100, 255));
+                                                 wxColor(0, 102, 0, 255));
     colourPickerCtrl[1] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 1,
-                                                 wxColor(10, 200, 100, 255));
+                                                 wxColor(50, 200, 50, 255));
     colourPickerCtrl[2] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 2,
-                                                 wxColor(150, 75, 0, 255));
+                                                 wxColor(130, 60, 0, 255));
 
     colourPickerCtrl[0]->SetToolTip("Leaf color");
     colourPickerCtrl[1]->SetToolTip("Leaf fill color");
@@ -113,8 +113,9 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[2] = new wxBoxSizer(wxHORIZONTAL);
 
     std::vector<std::string> icons {
-        "icon_line0.png", "icon_line1.png", "icon_line2.png", "icon_line3.png", "icon_line4.png",
-        "icon_line5.png", "icon_line6.png", "icon_line7.png", "icon_line8.png", "icon_line9.png",
+        "icon_line0.png", "icon_line1.png", "icon_line2.png", "icon_line3.png",
+        "icon_line4.png", "icon_line5.png", "icon_line6.png", "icon_line7.png",
+        "icon_line8.png", "icon_line9.png"
     };
     for (unsigned i = 0; i < 10; ++i) {
         bmpBtn[i] = new wxBitmapButton(this, ID_wxBitmapButton + i,
@@ -190,6 +191,8 @@ void AppFrame::OnSave(wxCommandEvent &event)
             } else {
                 SetStatusText("There was something wrong!");
             }
+        } else if (event.GetId() == ID_Menu_SaveHsvg) {
+            // To do
         }
     }
 }
@@ -225,8 +228,10 @@ void AppFrame::OnChangeColor(wxColourPickerEvent &event)
 
 void AppFrame::OnReset(wxCommandEvent &event)
 {
+    slider[3]->SetValue(10);
     drawingArea->OnReset();
     drawingArea->SetShape(0);
+    drawingArea->SetValue(3, slider[3]->GetValue());
     SetStatusText(wxString(wxEmptyString));
 }
 
@@ -323,11 +328,11 @@ DrawingArea::DrawingArea(wxFrame *parent)
 
     // Colors
     colorCursorPen = wxColor(0, 0, 0, 255);
-    colorLinePen = wxColor(150, 75, 0, 255);
-    colorShapePen = wxColor(50, 200, 100, 255);
-    colorCursorBrush = wxColor(150, 75, 0, 255);
-    colorLineBrush = wxColor(150, 75, 0, 255);
-    colorShapeBrush = wxColor(50, 200, 100, 255);
+    colorCursorBrush = wxColor(0, 0, 0, 255);
+    colorLinePen = wxColor(0, 0, 0, 255);
+    colorLineBrush = wxColor(0, 0, 0, 255);
+    colorShapePen = wxColor(0, 0, 0, 255);
+    colorShapeBrush = wxColor(0, 0, 0, 255);
 
     // State of the drawing pen
     isDrawing = true;
@@ -405,7 +410,7 @@ void DrawingArea::OnDraw(wxDC &dc)
         points.push_back(line.begin);
         dc.SetPen(wxPen(colorLinePen, lineTickness));
         dc.SetBrush(colorLineBrush);
-        if (line.points.size() > 2) {
+        if (points.size() > 2 && lineTickness > 0) {
             dc.DrawSpline(points.size(), &points[0]);
         }
         points.clear();
@@ -432,11 +437,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
     if (isDrawing && event.LeftIsDown()) {
         // Lines
         if (!path.empty()) {
-            if (!path.back().points.empty()) {
-                path.back().points.push_back(cursorPosition);
-            } else {
-                path.back().points.push_back(cursorPosition);
-            }
+            path.back().points.push_back(cursorPosition);
         } else {
             path.push_back(Path(cursorPosition));
         }
@@ -499,7 +500,7 @@ void DrawingArea::SetValue(unsigned number, unsigned value)
         shapeAngle = value * 180 / 100;
         break;
     case 1:
-        shapeLenght = value * 100 / 100;
+        shapeLenght = value * 150 / 100;
         break;
     case 2:
         limitLength = value * 50 / 100;

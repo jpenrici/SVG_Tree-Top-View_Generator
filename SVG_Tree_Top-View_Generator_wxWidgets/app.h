@@ -131,7 +131,7 @@ private:
         wxPoint begin, end;
         std::vector<wxPoint> points;
 
-        Path(wxPoint point) : begin(point), end(wxPoint(0, 0)), points({point}) {}
+        Path(wxPoint point) : begin(point), end(point), points({point}) {}
     };
 
     std::vector<Path> path;
