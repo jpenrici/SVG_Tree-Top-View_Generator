@@ -51,6 +51,7 @@ private:
         ID_Menu_SaveDCsvg,
         ID_Menu_SaveHsvg,
         ID_Menu_Undo,
+        ID_wxCheckBox,
         ID_wxLabel,
         ID_wxStatuBar,
         ID_wxSlider = 100,
@@ -58,22 +59,23 @@ private:
         ID_wxColourPickerCtrl = 1000
     };
 
+    DrawingArea    *drawingArea;
+
     wxBitmapButton     *bmpBtn[10];
     wxBoxSizer         *hBox[3];
     wxBoxSizer         *vBox[2];
+    wxCheckBox         *checkBox;
+    wxColourPickerCtrl *colorPCtrl[3];
     wxMenu             *menu[3];
     wxMenuBar          *menuBar;
     wxSlider           *slider[4];
     wxStaticText       *label[4];
     wxStatusBar        *statusBar;
-    wxColourPickerCtrl *colourPickerCtrl[3];
-
-    DrawingArea    *drawingArea;
 
     void OnAbout(wxCommandEvent &event);
-    void OnChangeSlider(wxCommandEvent &event);
-    void OnChangeColor(wxColourPickerEvent &event);
     void OnBitmapButtonClicked(wxCommandEvent &event);
+    void OnChangeColor(wxColourPickerEvent &event);
+    void OnChangeSlider(wxCommandEvent &event);
     void OnKeyDown(wxKeyEvent &event);
     void OnReset(wxCommandEvent &event);
     void OnSave(wxCommandEvent &event);
@@ -90,10 +92,10 @@ private:
         const wxString ABOUT_HLINK1 = "https://www.wxwidgets.org";
         const wxString ABOUT_HLINK2 = "https://www.w3.org/TR/SVG2";
 
-        wxButton *okBtn;
-        wxStaticText *label;
-        wxHyperlinkCtrl *hyperlink1, *hyperlink2;
         wxBoxSizer *vBox, *hBox[4];
+        wxButton *okBtn;
+        wxHyperlinkCtrl *hyperlink1, *hyperlink2;
+        wxStaticText *label;
     };
 };
 
@@ -103,23 +105,20 @@ public:
 
     bool IsEmpty();
     bool OnSaveSvg(wxString path, wxSize size);
-    void DrawShape(wxDC& dc, unsigned shape, wxPoint pos, unsigned lenght, unsigned angle);
-    void OnDraw(wxDC& dc);
-    void OnMouseClicked(wxMouseEvent &event);
-    void OnPaint(wxPaintEvent &event);
+    bool OnSaveSvg2(wxString path, wxSize size);
+    void IsSpline(bool isSpline = false);
     void OnRedo();
     void OnReset();
-    void OnSize(wxSizeEvent &event);
     void OnUndo();
-    void SetColor(unsigned number, wxColor colorPen, wxColor colorBrush);
+    void SetColor(unsigned number, wxColour colorPen, wxColour colorBrush);
     void SetShape(unsigned number);
     void SetValue(unsigned number, unsigned value);
 
 private:
     // Cursor
-    wxColor colorCursorPen, colorCursorBrush;
-    wxColor colorLinePen, colorLineBrush;
-    wxColor colorShapePen, colorShapeBrush;
+    wxColour colorCursorPen, colorCursorBrush;
+    wxColour colorLinePen, colorLineBrush;
+    wxColour colorShapePen, colorShapeBrush;
     wxPoint cursorPosition;
     unsigned cursorRadius;
 
@@ -127,6 +126,14 @@ private:
     bool isDrawing;
 
     // Draw
+    struct Shape {
+        wxColour pen, brush;
+        std::vector<wxPoint> points;
+
+        Shape(wxColour pen, wxColour brush, std::vector<wxPoint> points)
+            : pen(pen), brush(brush), points(points) {}
+    };
+
     struct Path {
         wxPoint begin, end;
         std::vector<wxPoint> points;
@@ -134,6 +141,7 @@ private:
         Path(wxPoint point) : begin(point), end(point), points({point}) {}
     };
 
+    std::vector<Shape> shapes;
     std::vector<Path> path;
     std::vector<Path> bkp;
 
@@ -142,4 +150,11 @@ private:
     unsigned shapeAngle;
     unsigned shapeLenght;
     unsigned shape;
+    bool isSpline;
+
+    void OnDraw(wxDC& dc);
+    void OnMouseClicked(wxMouseEvent &event);
+    void OnPaint(wxPaintEvent &event);
+    void OnSize(wxSizeEvent &event);
+    std::vector<wxPoint> GetPoints(unsigned shape, wxPoint pos, unsigned lenght, unsigned angle);
 };
