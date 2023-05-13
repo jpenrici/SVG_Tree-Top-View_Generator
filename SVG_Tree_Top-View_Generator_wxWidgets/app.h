@@ -24,9 +24,9 @@
 
 #include "svg.h" // custom generator
 
-inline wxPoint angularCoordinate(double x0, double y0, unsigned lenght, unsigned angle)
+inline wxPoint angularCoordinate(double x, double y, unsigned lenght, unsigned angle)
 {
-    return wxPoint(Cos(0, lenght, angle), Sin(0, lenght, angle));
+    return wxPoint(Cos(x, lenght, angle), Sin(y, lenght, angle));
 }
 
 class App : public wxApp {
@@ -46,10 +46,13 @@ private:
 
     enum ID {
         ID_AboutDialog,
+        ID_DrawingArea,
         ID_Menu_Redo,
         ID_Menu_Reset,
+        ID_Menu_Save,
         ID_Menu_SaveDCsvg,
         ID_Menu_SaveHsvg,
+        ID_Menu_SaveTxt,
         ID_Menu_Undo,
         ID_wxCheckBox,
         ID_wxLabel,
@@ -73,13 +76,9 @@ private:
     wxStatusBar        *statusBar;
 
     void OnAbout(wxCommandEvent &event);
-    void OnBitmapButtonClicked(wxCommandEvent &event);
-    void OnChangeColor(wxColourPickerEvent &event);
-    void OnChangeSlider(wxCommandEvent &event);
     void OnKeyDown(wxKeyEvent &event);
     void OnReset(wxCommandEvent &event);
     void OnSave(wxCommandEvent &event);
-    void OnUndo(wxCommandEvent &event);
 
     class AboutDialog : public wxDialog {
     public:
@@ -101,17 +100,19 @@ private:
 
 class DrawingArea : public wxPanel {
 public:
-    DrawingArea(wxFrame *parent);
+    DrawingArea(wxFrame *parent, int id, wxSize size);
 
     bool IsEmpty();
     bool OnSaveSvg(wxString path, wxSize size);
     bool OnSaveSvg2(wxString path, wxSize size);
-    void IsSpline(bool isSpline = false);
+    unsigned GetValue(unsigned number);
+    void OnMouseClicked(wxMouseEvent &event);
     void OnRedo();
     void OnReset();
     void OnUndo();
     void SetColor(unsigned number, wxColour colorPen, wxColour colorBrush);
     void SetShape(unsigned number);
+    void SetStyle(bool isSpline = false);
     void SetValue(unsigned number, unsigned value);
 
 private:
@@ -119,6 +120,7 @@ private:
     wxColour colorCursorPen, colorCursorBrush;
     wxColour colorLinePen, colorLineBrush;
     wxColour colorShapePen, colorShapeBrush;
+    wxColour colorBorderPen, colorBorderBrush;
     wxPoint cursorPosition;
     unsigned cursorRadius;
 
@@ -145,16 +147,15 @@ private:
     std::vector<Path> path;
     std::vector<Path> bkp;
 
-    unsigned lineTickness;
+    bool isSpline;
+    unsigned panelBorder;
     unsigned limitLength;
+    unsigned lineTickness;
+    unsigned shape;
     unsigned shapeAngle;
     unsigned shapeLenght;
-    unsigned shape;
-    bool isSpline;
 
     void OnDraw(wxDC& dc);
-    void OnMouseClicked(wxMouseEvent &event);
     void OnPaint(wxPaintEvent &event);
-    void OnSize(wxSizeEvent &event);
     std::vector<wxPoint> GetPoints(unsigned shape, wxPoint pos, unsigned lenght, unsigned angle);
 };
