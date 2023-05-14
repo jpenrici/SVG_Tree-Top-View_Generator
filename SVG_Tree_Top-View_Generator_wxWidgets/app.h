@@ -58,6 +58,7 @@ private:
     };
 
     DrawingArea    *drawingArea;
+    unsigned       currentShape;
 
     wxBitmapButton     *bmpBtn[10];
     wxBoxSizer         *hBox[3];
@@ -69,8 +70,6 @@ private:
     wxSlider           *slider[4];
     wxStaticText       *label[4];
     wxStatusBar        *statusBar;
-
-    unsigned currentShape;
 
     void OnKeyDown(wxKeyEvent &event);
     void OnNew(wxCommandEvent &event);

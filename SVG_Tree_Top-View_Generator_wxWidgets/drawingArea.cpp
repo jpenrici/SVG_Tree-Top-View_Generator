@@ -35,7 +35,9 @@ DrawingArea::DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size)
     maxColorShapeBrush = colorShapeBrush;
     randomColorShapeBrush = false;
 
-    // State of the drawing pen
+    // State of the drawing
+    currentSize = size;
+    maxSize = size;
     isDrawing = true;
     path.clear();
 
@@ -164,13 +166,13 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
 
 bool DrawingArea::Resize(wxSize newSize)
 {
-    if (newSize.x < 100 || newSize.y < 100 ||
-        newSize.x > GetSize().x || newSize.y > GetSize().y) {
+    if (newSize.x < 100 || newSize.y < 100 || newSize.x > maxSize.x || newSize.y > maxSize.y) {
         return false;
     }
 
     OnReset();
     SetSize(newSize);
+    currentSize = newSize;
 
     return true;
 }
@@ -288,15 +290,15 @@ unsigned DrawingArea::GetValue(unsigned number)
     return number < result.size() ? result[number] : 0;
 }
 
-bool DrawingArea::OnSaveSvgDC(wxString path, wxSize size)
+bool DrawingArea::OnSaveSvgDC(wxString path)
 {
-    wxSVGFileDC svgDC (path, size.x, size.y);
+    wxSVGFileDC svgDC (path, currentSize.x, currentSize.y);
     OnDraw (svgDC);
 
     return svgDC.IsOk();
 }
 
-bool DrawingArea::OnSaveSvg(wxString path, wxSize size)
+bool DrawingArea::OnSaveSvg(wxString path)
 {
     int count = 0;
     std::string polygons = "";
@@ -311,16 +313,17 @@ bool DrawingArea::OnSaveSvg(wxString path, wxSize size)
         svgShape.points = points;
         polygons += SVG::polygon(svgShape);
     }
-    std::string svg = SVG::svg(size.x, size.y, polygons);
+    std::string svg = SVG::svg(currentSize.x, currentSize.y, polygons);
     wxMessageOutputDebug().Printf("%s", svg);
 
     return SVG::save(svg, std::string(path));
 }
 
-bool DrawingArea::OnSaveTxT(wxString path, wxSize size)
+bool DrawingArea::OnSaveTxT(wxString path)
 {
     std::string delimiter = "\t";
-    std::string txt = "Name" + delimiter + "Stroke" + delimiter +"Fill" + delimiter + "Points\n";
+    std::string txt = "Drawing Area" + delimiter + std::to_string(currentSize.x) + " x " + std::to_string(currentSize.y) + "\n";
+    txt += "Name" + delimiter + "Stroke" + delimiter +"Fill" + delimiter + "Points\n";
     for (auto& shape : shapes) {
         txt += std::string(shape.name) + delimiter;
         txt += SVG::RGB2HEX(shape.pen.Red(), shape.pen.Green(), shape.pen.Blue()) + delimiter;

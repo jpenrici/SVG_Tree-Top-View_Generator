@@ -11,9 +11,9 @@ public:
     DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size);
 
     bool IsEmpty();
-    bool OnSaveSvg(wxString path, wxSize size);
-    bool OnSaveSvgDC(wxString path, wxSize size);
-    bool OnSaveTxT(wxString path, wxSize size);
+    bool OnSaveSvg(wxString path);
+    bool OnSaveSvgDC(wxString path);
+    bool OnSaveTxT(wxString path);
     bool Resize(wxSize size);
 
     unsigned GetValue(unsigned number);
@@ -43,6 +43,8 @@ private:
 
     // Status
     bool isDrawing;
+    wxSize maxSize;
+    wxSize currentSize;
 
     // Draw
     struct Shape {

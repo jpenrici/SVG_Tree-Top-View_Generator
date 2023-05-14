@@ -229,13 +229,13 @@ void AppFrame::OnSave(wxCommandEvent &event)
         auto size = drawingArea->GetBestSize();
         switch (event.GetId()) {
         case ID_Menu_SaveDCsvg:
-            result = drawingArea->OnSaveSvgDC(path, size);
+            result = drawingArea->OnSaveSvgDC(path);
             break;
         case ID_Menu_SaveHsvg:
-            result = drawingArea->OnSaveSvg(path, size);
+            result = drawingArea->OnSaveSvg(path);
             break;
         case ID_Menu_SaveTxt:
-            result = drawingArea->OnSaveTxT(path, size);
+            result = drawingArea->OnSaveTxT(path);
             break;
         default:;
             break;
