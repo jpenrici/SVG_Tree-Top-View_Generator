@@ -22,27 +22,13 @@
 #include <string>
 #include <vector>
 
-#include "svg.h" // custom generator
-
-inline wxPoint angularCoordinate(double x, double y, unsigned lenght, unsigned angle)
-{
-    // Origin (x,y)
-    return wxPoint(Cos(x, lenght, angle), Sin(y, lenght, angle));
-}
-
-inline wxPoint angularCoordinate(unsigned lenght, unsigned angle)
-{
-    // Origin (0,0)
-    return wxPoint(Cos(0, lenght, angle), Sin(0, lenght, angle));
-}
+#include "drawingArea.h"
 
 class App : public wxApp {
 public:
     virtual bool OnInit() wxOVERRIDE;
 
 };
-
-class DrawingArea;  // wxPanel with wxPaintDC
 
 class AppFrame : public wxFrame {
 public:
@@ -83,6 +69,8 @@ private:
     wxSlider           *slider[4];
     wxStaticText       *label[4];
     wxStatusBar        *statusBar;
+
+    unsigned currentShape;
 
     void OnKeyDown(wxKeyEvent &event);
     void OnNew(wxCommandEvent &event);
@@ -127,72 +115,3 @@ private:
     };
 };
 
-class DrawingArea : public wxPanel {
-public:
-    DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size);
-
-    bool IsEmpty();
-    bool OnSaveSvgCustom(wxString path, wxSize size);
-    bool OnSaveSvgDC(wxString path, wxSize size);
-    bool OnSaveTxT(wxString path, wxSize size);
-    bool Resize(wxSize size);
-    unsigned GetValue(unsigned number);
-    void OnMouseClicked(wxMouseEvent &event);
-    void OnRedo();
-    void OnReset();
-    void OnUndo();
-    void SetColor(unsigned number, wxColour colorPen, wxColour colorBrush);
-    void SetShape(unsigned number);
-    void SetStyle(bool isSpline = false);
-    void SetValue(unsigned number, unsigned value);
-    void SetRandomColor(wxColour color1 = wxColour(0, 0, 0, 255),
-                        wxColour color2 = wxColour(0, 0, 0, 255));
-
-private:
-    // Cursor
-    wxColour colorBorderPen, colorBorderBrush;
-    wxColour colorCursorPen, colorCursorBrush;
-    wxColour colorLinePen, colorLineBrush;
-    wxColour colorShapePen, colorShapeBrush;
-    wxColour minColorShapeBrush, maxColorShapeBrush;
-    wxPoint cursorPosition;
-    unsigned cursorRadius;
-    bool randomColorShapeBrush;
-
-    // Status
-    bool isDrawing;
-
-    // Draw
-    struct Shape {
-        wxString name;
-        wxColour pen, brush;
-        std::vector<wxPoint> points;
-
-        Shape(wxString name, wxColour pen, wxColour brush, std::vector<wxPoint> points)
-            : name(name), pen(pen), brush(brush), points(points) {}
-    };
-
-    struct Path {
-        wxPoint begin, end;
-        std::vector<wxPoint> points;
-
-        Path(wxPoint point) : begin(point), end(point), points({point}) {}
-    };
-
-    std::vector<Path> bkp;
-    std::vector<Path> path;
-    std::vector<Shape> shapes;
-
-    bool isSpline;
-    unsigned limitLength;
-    unsigned lineTickness;
-    unsigned panelBorder;
-    unsigned shape;
-    unsigned shapeAngle;
-    unsigned shapeLenght;
-
-    void OnDraw(wxDC& dc);
-    void OnPaint(wxPaintEvent &event);
-
-    std::vector<wxPoint> GetPoints(unsigned shape, wxPoint pos, unsigned lenght, unsigned angle);
-};

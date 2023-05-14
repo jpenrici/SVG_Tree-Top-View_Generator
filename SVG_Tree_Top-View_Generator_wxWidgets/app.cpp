@@ -1,7 +1,5 @@
 #include "app.h"
 
-#include "wx/dcsvg.h"
-
 bool App::OnInit()
 {
     if (!wxApp::OnInit()) {
@@ -21,17 +19,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 {
     // Menu
     wxMenu *submenu1 = new wxMenu;
-    submenu1->Append(ID_Menu_SaveTxt, "&Save As TXT",
-                     "Save TXT file using custom library.");
+    submenu1->Append(ID_Menu_SaveTxt, "&TXT", "Save TXT file using custom library.");
     submenu1->AppendSeparator();
-    submenu1->Append(ID_Menu_SaveDCsvg, "&Save As SVG [wxWidgets]\tCtrl-S",
-                     "Save SVG file using wxWidgets library.");
-    submenu1->Append(ID_Menu_SaveHsvg, "&Save As SVG [custom]\tCtrl-Shift-S",
-                     "Save SVG file using custom library.");
+    submenu1->Append(ID_Menu_SaveHsvg, "&SVG\tCtrl-S", "Save SVG file using custom library.");
+    submenu1->Append(ID_Menu_SaveDCsvg, "&SVG [wxWidgets]\tCtrl-Shift-S", "Save SVG file using wxWidgets library.");
 
     menu[0] = new wxMenu;
-    menu[0]->Append(ID_Menu_New, "&New", "New Drawing Area");
-    menu[0]->AppendSubMenu(submenu1, "Save");
+    menu[0]->Append(ID_Menu_New, "&New", "New Drawing Area.");
+    menu[0]->AppendSubMenu(submenu1, "Save As");
     menu[0]->AppendSeparator();
     menu[0]->Append(wxID_EXIT);
 
@@ -64,20 +59,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     wxFont font(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
     // Text
-    label[0] = new wxStaticText(this, ID_wxLabel, "Angle");
-    label[1] = new wxStaticText(this, ID_wxLabel, "Lenght");
-    label[2] = new wxStaticText(this, ID_wxLabel, "Distance");
-    label[3] = new wxStaticText(this, ID_wxLabel, "Tickness");
-
-    label[0]->SetFont(font);
-    label[1]->SetFont(font);
-    label[2]->SetFont(font);
-    label[3]->SetFont(font);
-
-    label[0]->SetToolTip("Angle of the leaf on the branch");
-    label[1]->SetToolTip("Leaf lenght");
-    label[2]->SetToolTip("Minimum distance between sheets");
-    label[3]->SetToolTip("Branch thickness");
+    std::vector<wxString> labels = {"Angle", "Lenght", "Distance", "Tickness"};
+    std::vector<wxString> tips = {"Angle of the leaf on the branch", "Leaf lenght",
+                                  "Minimum distance between sheets", "Branch thickness"};
+    for (unsigned i = 0; i < 4; i++) {
+        label[i] = new wxStaticText(this, ID_wxLabel, labels[i]);
+        label[i]->SetToolTip(tips[i]);
+        label[i]->SetFont(font);
+    }
 
     // DrawingArea - Panel
     drawingArea = new DrawingArea(this, ID_DrawingArea, wxDefaultPosition, wxSize(850, 500));
@@ -98,25 +87,6 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         });
     }
 
-    // ColourPickerCtrl
-    colorPCtrl[0] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 0,
-                                           wxColor(0, 102, 0, 255));
-    colorPCtrl[1] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 1,
-                                           wxColor(50, 200, 50, 255));
-    colorPCtrl[2] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 2,
-                                           wxColor(130, 60, 0, 255));
-
-    colorPCtrl[0]->SetToolTip("Leaf border color");
-    colorPCtrl[1]->SetToolTip("Leaf fill color");
-    colorPCtrl[2]->SetToolTip("Branch color");
-
-    for (unsigned i = 0; i < 3; ++i) {
-        colorPCtrl[i]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
-            drawingArea->SetColor(i, colorPCtrl[i]->GetColour(), colorPCtrl[i]->GetColour());
-        });
-        drawingArea->SetColor(i, colorPCtrl[i]->GetColour(), colorPCtrl[i]->GetColour());
-    }
-
     // Check Box
     checkBox[0] = new wxCheckBox(this, ID_chkBox_Spline, "SpLine");
     checkBox[0]->SetToolTip("Draw in Spline or Polygon.");
@@ -134,12 +104,37 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     drawingArea->SetStyle();
 
     checkBox[1]->Bind(wxEVT_CHECKBOX, [ = ](wxCommandEvent &) {
+            checkBox[0]->SetValue(false);
+            drawingArea->SetStyle(checkBox[0]->GetValue());
             if (checkBox[1]->GetValue()) {
                 drawingArea->SetRandomColor(wxColour(0, 80, 0), wxColour(0, 200, 0));
             } else {
                 drawingArea->SetRandomColor();
+                drawingArea->SetColor(1, colorPCtrl[1]->GetColour(), colorPCtrl[1]->GetColour());
             }
         }, ID_chkBox_Random);
+
+    // ColourPickerCtrl
+    colorPCtrl[0] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 0, wxColor(0, 102, 0, 255));
+    colorPCtrl[1] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 1, wxColor(50, 200, 50, 255));
+    colorPCtrl[2] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 2, wxColor(130, 60, 0, 255));
+
+    tips = {"Leaf border color", "Leaf fill color", "Branch color"};
+    for (unsigned i = 0; i < 3; ++i) {
+        colorPCtrl[i]->SetToolTip(tips[i]);
+        drawingArea->SetColor(i, colorPCtrl[i]->GetColour(), colorPCtrl[i]->GetColour());
+    }
+
+    colorPCtrl[0]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
+        drawingArea->SetColor(0, colorPCtrl[0]->GetColour(), colorPCtrl[0]->GetColour());
+    });
+    colorPCtrl[1]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
+        checkBox[1]->SetValue(false);
+        drawingArea->SetColor(1, colorPCtrl[1]->GetColour(), colorPCtrl[1]->GetColour());
+    });
+    colorPCtrl[2]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
+        drawingArea->SetColor(2, colorPCtrl[2]->GetColour(), colorPCtrl[2]->GetColour());
+    });
 
     // Box and Controllers
     vBox[0] = new wxBoxSizer(wxVERTICAL);
@@ -148,19 +143,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[1] = new wxBoxSizer(wxHORIZONTAL);
     hBox[2] = new wxBoxSizer(wxHORIZONTAL);
 
-    std::vector<std::string> icons {
-        "icon_line0.png", "icon_line1.png", "icon_line2.png", "icon_line3.png",
-        "icon_line4.png", "icon_line5.png", "icon_line6.png", "icon_line7.png",
-        "icon_line8.png", "icon_line9.png"
-    };
     for (unsigned i = 0; i < 10; ++i) {
-        bmpBtn[i] = new wxBitmapButton(this, ID_wxBitmapButton + i,
-                                       wxBitmap("Resources/" + icons[i],
-                                                wxBITMAP_TYPE_ANY));
+        wxString img = "Resources/icon_line" + std::to_string(i) + ".png";
+        bmpBtn[i] = new wxBitmapButton(this, ID_wxBitmapButton + i, wxBitmap(img, wxBITMAP_TYPE_ANY));
         bmpBtn[i]->SetSize(bmpBtn[i]->GetBestSize());
         bmpBtn[i]->SetToolTip("Leaf " + std::to_string(i + 1));
         bmpBtn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &event){
-            drawingArea->SetShape(event.GetId() % ID_wxBitmapButton);
+            currentShape = event.GetId() % ID_wxBitmapButton;
+            drawingArea->SetShape(currentShape);
         });
         vBox[1]->Add(bmpBtn[i], 0, wxLEFT, 5);
     }
@@ -201,7 +191,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     SetMaxSize(size);
     SetStatusBar(statusBar);
     SetStatusText("Welcome! Keep the Mouse Left pressed to draw a branch of the tree.");
-    SetBackgroundColour(wxColour(127, 127, 127, 255));
+    SetBackgroundColour(wxColour(50, 50, 50, 255));
 
     drawingArea->Bind(wxEVT_LEFT_DOWN, [ = ](wxMouseEvent &event){
         SetStatusText("");
@@ -232,19 +222,17 @@ void AppFrame::OnSave(wxCommandEvent &event)
         break;
     }
 
-    wxFileDialog dialog(this, "Save Picture as", wxEmptyString,
-                        "tree", filter, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    wxFileDialog dialog(this, "Save Picture as", wxEmptyString, "tree", filter, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (dialog.ShowModal() == wxID_OK) {
-        auto result = true;
+        auto result = false;
         auto path = dialog.GetPath();
         auto size = drawingArea->GetBestSize();
-        wxMessageOutputDebug().Printf("%d, %d", size.x, size.y);
         switch (event.GetId()) {
         case ID_Menu_SaveDCsvg:
             result = drawingArea->OnSaveSvgDC(path, size);
             break;
         case ID_Menu_SaveHsvg:
-            result = drawingArea->OnSaveSvgCustom(path, size);
+            result = drawingArea->OnSaveSvg(path, size);
             break;
         case ID_Menu_SaveTxt:
             result = drawingArea->OnSaveTxT(path, size);
@@ -282,6 +270,11 @@ void AppFrame::OnKeyDown(wxKeyEvent &event)
     if (keyCode == 27) {    // ESC
         // Pass
     }
+    if (keyCode == 82) {     // R
+        if (checkBox[1]->GetValue()) {
+            drawingArea->SetShape(currentShape);
+        }
+    }
     if (keyCode == 127) {   // Delete
         drawingArea->OnReset();
     }
@@ -292,9 +285,9 @@ void AppFrame::OnKeyDown(wxKeyEvent &event)
 void AppFrame::Reset()
 {
     drawingArea->OnReset();
-    drawingArea->SetShape(0);   // Default
+    drawingArea->SetShape(currentShape);   // Default
 
-    slider[3]->SetValue(10);    // Line Tickness - Branch
+    slider[3]->SetValue(10);               // Line Tickness - Branch
     drawingArea->SetValue(3, slider[3]->GetValue());
 
     SetStatusText(wxString(wxEmptyString));
@@ -311,25 +304,17 @@ AppFrame::AboutDialog::AboutDialog()
     hBox[3] = new wxBoxSizer(wxHORIZONTAL);
 
     // Label
-    label = new wxStaticText(this, wxID_ANY, ABOUT, wxDefaultPosition,
-                             wxDefaultSize, wxTE_MULTILINE | wxTE_RICH);
-    label->SetFont(wxFont(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
-                          wxFONTWEIGHT_NORMAL));
+    label = new wxStaticText(this, wxID_ANY, ABOUT, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_RICH);
+    label->SetFont(wxFont(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 
     // Hyperlink
-    hyperlink1 = new wxHyperlinkCtrl(this, wxID_ANY,
-                                     ABOUT_HLINK1, ABOUT_HLINK1,
-                                     wxDefaultPosition, wxDefaultSize,
+    hyperlink1 = new wxHyperlinkCtrl(this, wxID_ANY, ABOUT_HLINK1, ABOUT_HLINK1, wxDefaultPosition, wxDefaultSize,
                                      wxHL_DEFAULT_STYLE);
-    hyperlink1->SetFont(wxFont(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
-                               wxFONTWEIGHT_NORMAL));
+    hyperlink1->SetFont(wxFont(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 
-    hyperlink2 = new wxHyperlinkCtrl(this, wxID_ANY,
-                                     ABOUT_HLINK2, ABOUT_HLINK2,
-                                     wxDefaultPosition, wxDefaultSize,
+    hyperlink2 = new wxHyperlinkCtrl(this, wxID_ANY, ABOUT_HLINK2, ABOUT_HLINK2, wxDefaultPosition, wxDefaultSize,
                                      wxHL_DEFAULT_STYLE);
-    hyperlink2->SetFont(wxFont(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
-                               wxFONTWEIGHT_NORMAL));
+    hyperlink2->SetFont(wxFont(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 
     // Button
     okBtn = new wxButton(this, wxID_ANY, "Ok", wxDefaultPosition, wxSize(70, 30));
@@ -375,14 +360,11 @@ AppFrame::NewDialog::NewDialog(wxSize drawingAreaSize)
 
     // Label
     wxFont font(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    label[0] = new wxStaticText(this, wxID_ANY, "Enter the new size."
-                                , wxDefaultPosition,  wxDefaultSize,
+    label[0] = new wxStaticText(this, wxID_ANY, "Enter the new size.", wxDefaultPosition, wxDefaultSize,
                                 wxTE_MULTILINE | wxTE_RICH);
-    label[1] = new wxStaticText(this, wxID_ANY, "Width"
-                                , wxDefaultPosition,  wxDefaultSize,
+    label[1] = new wxStaticText(this, wxID_ANY, "Width", wxDefaultPosition, wxDefaultSize,
                                 wxTE_MULTILINE | wxTE_RICH);
-    label[2] = new wxStaticText(this, wxID_ANY, "Heigth"
-                                , wxDefaultPosition,  wxDefaultSize,
+    label[2] = new wxStaticText(this, wxID_ANY, "Heigth", wxDefaultPosition, wxDefaultSize,
                                 wxTE_MULTILINE | wxTE_RICH);
 
     label[0]->SetFont(font);
@@ -390,12 +372,8 @@ AppFrame::NewDialog::NewDialog(wxSize drawingAreaSize)
     label[2]->SetFont(font);
 
     // TextCtrl
-    width = new wxTextCtrl(this, ID_Text_width, wxEmptyString,
-                           wxDefaultPosition, wxDefaultSize,
-                           wxTE_PROCESS_ENTER);
-    height = new wxTextCtrl(this, ID_Text_width, wxEmptyString,
-                            wxDefaultPosition, wxDefaultSize,
-                            wxTE_PROCESS_ENTER);
+    width = new wxTextCtrl(this, ID_Text_width, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    height = new wxTextCtrl(this, ID_Text_width, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 
     width->SetToolTip("Min, Max : 100 - " + std::to_string(drawingAreaSize.x));
     height->SetToolTip("Min, Max : 100 - " + std::to_string(drawingAreaSize.y));
@@ -446,399 +424,4 @@ wxSize AppFrame::NewDialog::GetSize()
     }
 
     return wxSize(0, 0);
-}
-
-DrawingArea::DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size)
-    : wxPanel(parent, id, position, size)
-{
-    // Cursor
-    cursorRadius = 5;
-    cursorPosition = wxPoint(0, 0);
-
-    // Colors
-    colorBorderBrush = wxColour(0, 0, 0, 0);
-    colorBorderPen = wxColour(255, 0, 0, 255);
-    colorCursorBrush = wxColour(0, 0, 0, 255);
-    colorCursorPen = wxColour(0, 0, 0, 255);
-    colorLineBrush = wxColour(0, 0, 0, 255);
-    colorLinePen = wxColour(0, 0, 0, 255);
-    colorShapeBrush = wxColour(0, 0, 0, 255);
-    colorShapePen = wxColour(0, 0, 0, 255);
-    minColorShapeBrush = colorShapeBrush;
-    maxColorShapeBrush = colorShapeBrush;
-    randomColorShapeBrush = false;
-
-    // State of the drawing pen
-    isDrawing = true;
-    path.clear();
-
-    // Draw
-    isSpline = false;
-    limitLength = 20;
-    lineTickness = 10;
-    panelBorder = 20;
-    shapeAngle = 60;
-    shapeLenght = 50;
-
-    // Handlers
-    Bind(wxEVT_LEFT_DOWN, &DrawingArea::OnMouseClicked, this, id);
-    Bind(wxEVT_MOTION, &DrawingArea::OnMouseClicked, this, id);
-    Bind(wxEVT_PAINT, &DrawingArea::OnPaint, this, id);
-    Bind(wxEVT_SIZE, [ = ](wxSizeEvent &){ Refresh(); }, id);
-}
-
-void DrawingArea::OnPaint(wxPaintEvent &event)
-{
-    wxPaintDC dc(this);
-    dc.SetPen(wxNullPen);
-    dc.SetBrush(wxNullBrush);
-    OnDraw(dc);
-}
-
-void DrawingArea::OnUndo()
-{
-    if (!path.empty()) {
-        bkp.push_back(path.back());
-        path.pop_back();
-    }
-    Refresh();
-}
-
-void DrawingArea::OnRedo()
-{
-    if (!bkp.empty()) {
-        path.push_back(bkp.back());
-        bkp.pop_back();
-    }
-    Refresh();
-}
-
-void DrawingArea::OnDraw(wxDC &dc)
-{
-    if (isDrawing) {
-        // Cursor
-        dc.SetPen(colorCursorPen);
-        dc.SetBrush(colorCursorBrush);
-        dc.DrawCircle(cursorPosition.x, cursorPosition.y, cursorRadius);
-        // Border
-        dc.SetPen(colorBorderPen);
-        dc.SetBrush(colorBorderBrush);
-        dc.DrawRectangle(panelBorder, panelBorder,
-                         GetSize().x - 2 * panelBorder,
-                         GetSize().y - 2 * panelBorder);
-    }
-
-    wxPoint pos;
-    shapes.clear();
-    std::vector<wxPoint> pointsLine;
-    std::vector<wxPoint> pointsShape;
-    for (auto &line : path) {
-        pos = line.end;
-        for (unsigned i = line.points.size() - 1; i > 0; i--) {
-            auto lenght = Distance(pos.x, pos.y, line.points[i].x, line.points[i].y);
-            if (lenght > limitLength ) {
-                auto sectionAngle = LineAngle(pos.x, pos.y, line.points[i].x, line.points[i].y);
-                dc.SetPen(colorShapePen);
-                if (randomColorShapeBrush) {
-                    unsigned r = maxColorShapeBrush.Red() - minColorShapeBrush.Red();
-                    unsigned g = maxColorShapeBrush.Green() - minColorShapeBrush.Green();
-                    unsigned b = maxColorShapeBrush.Blue() - minColorShapeBrush.Blue();
-                    r = r > 0 ? rand() % r : 0;
-                    g = g > 0 ? rand() % g : 0;
-                    b = b > 0 ? rand() % b : 0;
-                    colorShapeBrush = wxColour((minColorShapeBrush.Red() + r) % 255,
-                                               (minColorShapeBrush.Green() + g) % 255,
-                                               (minColorShapeBrush.Blue() + b) % 255);
-                }
-                dc.SetBrush(colorShapeBrush);
-                for (auto& signal : {-1, 1}) {
-                    auto angle = sectionAngle + signal * shapeAngle;
-                    pointsShape = GetPoints(shape, pos + angularCoordinate(lineTickness, angle),
-                                            shapeLenght, angle);
-                    shapes.push_back(Shape(isSpline ? "Spline" : "Polygon",
-                                           colorShapePen, colorShapeBrush, pointsShape));
-                    if (isSpline) {
-                        dc.DrawSpline(pointsShape.size(), &pointsShape[0]);
-                    } else {
-                        dc.DrawPolygon(pointsShape.size(), &pointsShape[0]);
-                    }
-                }
-                pos = line.points[i];
-                pointsLine.push_back(pos);
-            }
-        }
-        pointsLine.push_back(line.begin);
-        dc.SetPen(wxPen(colorLinePen, lineTickness));
-        dc.SetBrush(colorLineBrush);
-        if (pointsLine.size() > 2 && lineTickness > 0) {
-            dc.DrawSpline(pointsLine.size(), &pointsLine[0]);
-            shapes.push_back(Shape("Line", colorLinePen, colorLineBrush, pointsLine));
-        }
-        pointsLine.clear();
-    }
-}
-
-void DrawingArea::OnMouseClicked(wxMouseEvent &event)
-{
-    cursorPosition = ScreenToClient(::wxGetMousePosition());
-    if (cursorPosition.x > panelBorder && cursorPosition.x < GetSize().x - panelBorder &&
-        cursorPosition.y > panelBorder && cursorPosition.y < GetSize().y - panelBorder) {
-        if (event.LeftDown()) {
-            // Close line
-            if (!path.empty()) {
-                path.back().end = path.back().points.back();
-            }
-            // Open new line
-            isDrawing = true;
-            path.push_back(Path(cursorPosition));
-        }
-        if (isDrawing && event.LeftIsDown()) {
-            // Lines
-            if (!path.empty()) {
-                path.back().points.push_back(cursorPosition);
-            } else {
-                path.push_back(Path(cursorPosition));
-            }
-        } else {
-            isDrawing = false;
-        }
-        if (event.Moving() && !randomColorShapeBrush) {
-            randomColorShapeBrush = false;
-        }
-        Refresh();
-    }
-}
-
-bool DrawingArea::Resize(wxSize newSize)
-{
-    if (newSize.x < 100 || newSize.y < 100 ||
-        newSize.x > GetSize().x || newSize.y > GetSize().y) {
-        return false;
-    }
-
-    OnReset();
-    SetSize(newSize);
-
-    return true;
-}
-
-void DrawingArea::OnReset()
-{
-    cursorPosition = wxPoint(panelBorder, panelBorder);
-    bkp.clear();
-    path.clear();
-    shapes.clear();
-    Refresh();
-}
-
-bool DrawingArea::OnSaveSvgDC(wxString path, wxSize size)
-{
-    wxSVGFileDC svgDC (path, size.x, size.y);
-    OnDraw (svgDC);
-
-    return svgDC.IsOk();
-}
-
-bool DrawingArea::OnSaveSvgCustom(wxString path, wxSize size)
-{
-    int count = 0;
-    std::string polygons = "";
-    for (auto& shape : shapes) {
-        SVG::Shape svgShape(std::string(shape.name) + std::to_string(count++),
-                            SVG::RGB2HEX(shape.pen.Red(), shape.pen.Green(), shape.pen.Blue()),
-                            SVG::RGB2HEX(shape.brush.Red(), shape.brush.Green(), shape.brush.Blue()));
-        std::vector<SVG::Point> points;
-        for (auto& point : shape.points) {
-            points.push_back(SVG::Point(point.x, point.y));
-        }
-        svgShape.points = points;
-        polygons += SVG::polygon(svgShape);
-    }
-    std::string svg = SVG::svg(size.x, size.y, polygons);
-    wxMessageOutputDebug().Printf("%s", svg);
-
-    return SVG::save(svg, std::string(path));
-}
-
-bool DrawingArea::OnSaveTxT(wxString path, wxSize size)
-{
-    std::string delimiter = "\t";
-    std::string txt = "Name" + delimiter + "Stroke" + delimiter +"Fill" + delimiter + "Points\n";
-    for (auto& shape : shapes) {
-        txt += std::string(shape.name) + delimiter;
-        txt += SVG::RGB2HEX(shape.pen.Red(), shape.pen.Green(), shape.pen.Blue()) + delimiter;
-        txt += SVG::RGB2HEX(shape.brush.Red(), shape.brush.Green(), shape.brush.Blue()) + delimiter;
-        for (auto& point : shape.points) {
-            txt += std::to_string(point.x) + "," + std::to_string(point.y) + delimiter;
-        }
-        txt += "\n";
-    }
-    wxMessageOutputDebug().Printf("%s", txt);
-    //    return SVG::save(txt, std::string(path));
-    return false;
-}
-
-void DrawingArea::SetColor(unsigned int number, wxColour colorPen, wxColour colorBrush)
-{
-    switch (number) {
-    case 0:
-        colorShapePen = colorPen;
-        break;
-    case 1:
-        colorShapeBrush = colorBrush;
-        randomColorShapeBrush = false;
-        break;
-    case 2:
-        colorLinePen = colorPen;
-        colorLineBrush = colorBrush;
-        break;
-    default:
-        break;
-    }
-    Refresh();
-}
-
-void DrawingArea::SetShape(unsigned number)
-{
-    shape = number;
-    Refresh();
-}
-
-bool DrawingArea::IsEmpty()
-{
-    return path.empty();
-}
-
-void DrawingArea::SetStyle(bool isSpline)
-{
-    this->isSpline = isSpline;
-}
-
-void DrawingArea::SetValue(unsigned number, unsigned value)
-{
-    switch (number) {
-    case 0:
-        shapeAngle = value * 180 / 100;
-        break;
-    case 1:
-        shapeLenght = value * 150 / 100;
-        break;
-    case 2:
-        limitLength = value * 50 / 100;
-        break;
-    case 3:
-        lineTickness = value * 20 / 100;
-        break;
-    default:
-        break;
-    };
-    Refresh();
-}
-
-void DrawingArea::SetRandomColor(wxColour color1, wxColour color2)
-{
-    minColorShapeBrush = wxColour(std::min(color1.Red(), color2.Red()),
-                                  std::min(color1.Green(), color2.Green()),
-                                  std::min(color1.Blue(), color2.Blue()));
-    maxColorShapeBrush = wxColour(std::max(color1.Red(), color2.Red()),
-                                  std::max(color1.Green(), color2.Green()),
-                                  std::max(color1.Blue(), color2.Blue()));
-    randomColorShapeBrush = !(color1 == color2);
-    Refresh();
-}
-
-unsigned DrawingArea::GetValue(unsigned number)
-{
-    std::vector<unsigned> result{shapeAngle, shapeLenght,
-                                 limitLength, lineTickness};
-    return number < result.size() ? result[number] : 0;
-}
-
-std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos,
-                                            unsigned lenght, unsigned angle)
-{
-    std::vector<wxPoint> points;
-    if (shape == 1) {
-        points = {pos,
-                  pos + angularCoordinate(lenght / 2, angle + 15),
-                  pos + angularCoordinate(lenght, angle),
-                  pos + angularCoordinate(lenght / 2, angle - 15),
-                  pos};
-    } else if (shape == 2) {
-        points = {pos,
-                  pos + angularCoordinate(lenght * 2 / 5, angle + 45),
-                  pos + angularCoordinate(lenght, angle),
-                  pos + angularCoordinate(lenght * 2 / 5, angle - 45),
-                  pos};
-    } else if (shape == 3) {
-        points = {pos,
-            pos + angularCoordinate(lenght * 2 / 6, angle + 60),
-            pos + angularCoordinate(lenght * 4 / 6, angle + 20),
-            pos + angularCoordinate(lenght, angle),
-            pos + angularCoordinate(lenght * 4 / 6, angle - 20),
-            pos + angularCoordinate(lenght * 2 / 6, angle - 60),
-            pos
-        };
-    } else if (shape == 4) {
-        points = {pos,
-                  pos + angularCoordinate(lenght, angle + 15),
-                  pos + angularCoordinate(lenght * 3 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 15),
-                  pos};
-    } else if (shape == 5) {
-        points = {pos,
-                  pos + angularCoordinate(lenght, angle + 20),
-                  pos + angularCoordinate(lenght * 1 / 5, angle),
-                  pos + angularCoordinate(lenght, angle + 15),
-                  pos + angularCoordinate(lenght * 2 / 5, angle),
-                  pos + angularCoordinate(lenght, angle + 5),
-                  pos + angularCoordinate(lenght * 3 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 5),
-                  pos + angularCoordinate(lenght * 2 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 15),
-                  pos + angularCoordinate(lenght * 1 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 20),
-                  pos};
-    } else if (shape == 6) {
-        points = {pos,
-                  pos + angularCoordinate(lenght, angle + 45),
-                  pos + angularCoordinate(lenght * 2 / 6, angle),
-                  pos + angularCoordinate(lenght, angle + 30),
-                  pos + angularCoordinate(lenght * 3 / 6, angle),
-                  pos + angularCoordinate(lenght, angle + 10),
-                  pos + angularCoordinate(lenght * 4 / 6, angle),
-                  pos + angularCoordinate(lenght, angle - 10),
-                  pos + angularCoordinate(lenght * 3 / 6, angle),
-                  pos + angularCoordinate(lenght, angle - 30),
-                  pos + angularCoordinate(lenght * 2 / 6, angle),
-                  pos + angularCoordinate(lenght, angle - 45),
-                  pos};
-    } else if (shape == 7) {
-        points = {pos,
-                  pos + angularCoordinate(lenght / 2, angle + 70),
-                  pos + angularCoordinate(lenght / 2, angle + 50),
-                  pos + angularCoordinate(lenght / 2, angle + 10),
-                  pos + angularCoordinate(lenght / 2, angle - 10),
-                  pos + angularCoordinate(lenght / 2, angle - 50),
-                  pos + angularCoordinate(lenght / 2, angle - 70),
-                  pos};
-    } else if (shape == 8) {
-        points = {pos,
-                  pos + angularCoordinate(lenght, angle + 20),
-                  pos + angularCoordinate(lenght, angle + 5),
-                  pos + angularCoordinate(lenght, angle - 20),
-                  pos};
-    } else if (shape == 9) {
-        points = {pos,
-                  pos + angularCoordinate(lenght, angle + 60),
-                  pos + angularCoordinate(lenght * 2 / 5, angle - 45),
-                  pos,
-                  pos + angularCoordinate(lenght * 2 / 5, angle + 45),
-                  pos + angularCoordinate(lenght, angle - 60),
-                  pos};
-    } else {
-        points = {pos, pos + angularCoordinate(lenght, angle)};
-    }
-
-    return points;
 }

@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SOURCES
     main.cpp
     app.h app.cpp
+    drawingArea.h drawingArea.cpp
     svg.h
 )
 
