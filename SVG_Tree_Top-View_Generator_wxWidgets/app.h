@@ -54,6 +54,7 @@ private:
     enum ID {
         ID_AboutDialog,
         ID_DrawingArea,
+        ID_Menu_New,
         ID_Menu_Redo,
         ID_Menu_Reset,
         ID_Menu_Save,
@@ -61,7 +62,8 @@ private:
         ID_Menu_SaveHsvg,
         ID_Menu_SaveTxt,
         ID_Menu_Undo,
-        ID_wxCheckBox,
+        ID_chkBox_Random,
+        ID_chkBox_Spline,
         ID_wxLabel,
         ID_wxStatuBar,
         ID_wxSlider = 100,
@@ -74,7 +76,7 @@ private:
     wxBitmapButton     *bmpBtn[10];
     wxBoxSizer         *hBox[3];
     wxBoxSizer         *vBox[2];
-    wxCheckBox         *checkBox;
+    wxCheckBox         *checkBox[2];
     wxColourPickerCtrl *colorPCtrl[3];
     wxMenu             *menu[3];
     wxMenuBar          *menuBar;
@@ -82,15 +84,15 @@ private:
     wxStaticText       *label[4];
     wxStatusBar        *statusBar;
 
-    void OnAbout(wxCommandEvent &event);
     void OnKeyDown(wxKeyEvent &event);
-    void OnReset(wxCommandEvent &event);
+    void OnNew(wxCommandEvent &event);
     void OnSave(wxCommandEvent &event);
+    void Reset();
 
     class AboutDialog : public wxDialog {
     public:
         AboutDialog();
-        ~AboutDialog() {};
+        ~AboutDialog(){};
 
     private:
         const wxString ABOUT = "App to generate SVG tree images in top view.\n\n"
@@ -103,16 +105,37 @@ private:
         wxHyperlinkCtrl *hyperlink1, *hyperlink2;
         wxStaticText *label;
     };
+
+    class NewDialog : public wxDialog {
+    public:
+        NewDialog(wxSize drawingAreaSize);
+        ~NewDialog(){};
+
+        wxSize GetSize();
+
+    private:
+
+        enum ID {
+            ID_Text_width,
+            ID_Text_height
+        };
+
+        wxBoxSizer *vBox, *hBox[4];
+        wxButton *okBtn;
+        wxStaticText *label[3];
+        wxTextCtrl *width, *height;
+    };
 };
 
 class DrawingArea : public wxPanel {
 public:
-    DrawingArea(wxFrame *parent, int id, wxSize size);
+    DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size);
 
     bool IsEmpty();
-    bool OnSaveSvgDC(wxString path, wxSize size);
     bool OnSaveSvgCustom(wxString path, wxSize size);
+    bool OnSaveSvgDC(wxString path, wxSize size);
     bool OnSaveTxT(wxString path, wxSize size);
+    bool Resize(wxSize size);
     unsigned GetValue(unsigned number);
     void OnMouseClicked(wxMouseEvent &event);
     void OnRedo();
@@ -122,6 +145,8 @@ public:
     void SetShape(unsigned number);
     void SetStyle(bool isSpline = false);
     void SetValue(unsigned number, unsigned value);
+    void SetRandomColor(wxColour color1 = wxColour(0, 0, 0, 255),
+                        wxColour color2 = wxColour(0, 0, 0, 255));
 
 private:
     // Cursor
@@ -129,8 +154,10 @@ private:
     wxColour colorCursorPen, colorCursorBrush;
     wxColour colorLinePen, colorLineBrush;
     wxColour colorShapePen, colorShapeBrush;
+    wxColour minColorShapeBrush, maxColorShapeBrush;
     wxPoint cursorPosition;
     unsigned cursorRadius;
+    bool randomColorShapeBrush;
 
     // Status
     bool isDrawing;
