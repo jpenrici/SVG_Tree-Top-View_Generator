@@ -200,18 +200,39 @@ void AppFrame::OnSave(wxCommandEvent &event)
         return;
     }
 
+    std::string filter;
+    switch (event.GetId()) {
+    case ID_Menu_SaveDCsvg:
+    case ID_Menu_SaveHsvg:
+        filter = "SVG vector picture (*.svg)|*.svg";
+        break;
+    case ID_Menu_SaveTxt:
+        filter = "Text file (*.txt)|*.txt" ;
+        break;
+    default:
+        filter = "All files | *.*";
+        break;
+    }
+
     wxFileDialog dialog(this, "Save Picture as", wxEmptyString,
-                        "tree", "SVG vector picture (*.svg)|*.svg",
-                        wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+                        "tree", filter, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (dialog.ShowModal() == wxID_OK) {
         auto result = true;
         auto path = dialog.GetPath();
         auto size = drawingArea->GetBestSize();
         wxMessageOutputDebug().Printf("%d, %d", size.x, size.y);
-        if (event.GetId() == ID_Menu_SaveDCsvg) {
-            result = drawingArea->OnSaveSvg(path, size);
-        } else if (event.GetId() == ID_Menu_SaveHsvg) {
-            result = drawingArea->OnSaveSvg2(path, size);
+        switch (event.GetId()) {
+        case ID_Menu_SaveDCsvg:
+            result = drawingArea->OnSaveSvgDC(path, size);
+            break;
+        case ID_Menu_SaveHsvg:
+            result = drawingArea->OnSaveSvgCustom(path, size);
+            break;
+        case ID_Menu_SaveTxt:
+            result = drawingArea->OnSaveTxT(path, size);
+            break;
+        default:;
+            break;
         }
         if (result) {
             wxString filename = std::filesystem::path(std::string(path)).filename().string();
@@ -331,14 +352,14 @@ DrawingArea::DrawingArea(wxFrame *parent, int id, wxSize size)
     cursorPosition = wxPoint(0, 0);
 
     // Colors
-    colorCursorPen = wxColour(0, 0, 0, 255);
-    colorCursorBrush = wxColour(0, 0, 0, 255);
-    colorLinePen = wxColour(0, 0, 0, 255);
-    colorLineBrush = wxColour(0, 0, 0, 255);
-    colorShapePen = wxColour(0, 0, 0, 255);
-    colorShapeBrush = wxColour(0, 0, 0, 255);
-    colorBorderPen = wxColour(255, 0, 0, 255);
     colorBorderBrush = wxColour(0, 0, 0, 0);
+    colorBorderPen = wxColour(255, 0, 0, 255);
+    colorCursorBrush = wxColour(0, 0, 0, 255);
+    colorCursorPen = wxColour(0, 0, 0, 255);
+    colorLineBrush = wxColour(0, 0, 0, 255);
+    colorLinePen = wxColour(0, 0, 0, 255);
+    colorShapeBrush = wxColour(0, 0, 0, 255);
+    colorShapePen = wxColour(0, 0, 0, 255);
 
     // State of the drawing pen
     isDrawing = true;
@@ -348,15 +369,15 @@ DrawingArea::DrawingArea(wxFrame *parent, int id, wxSize size)
     isSpline = false;
     limitLength = 20;
     lineTickness = 10;
+    panelBorder = 20;
     shapeAngle = 60;
     shapeLenght = 50;
-    panelBorder = 20;
 
     // Handlers
-    Bind(wxEVT_PAINT, &DrawingArea::OnPaint, this, id);
-    Bind(wxEVT_SIZE, [ = ](wxSizeEvent &){ Refresh(); }, id);
     Bind(wxEVT_LEFT_DOWN, &DrawingArea::OnMouseClicked, this, id);
     Bind(wxEVT_MOTION, &DrawingArea::OnMouseClicked, this, id);
+    Bind(wxEVT_PAINT, &DrawingArea::OnPaint, this, id);
+    Bind(wxEVT_SIZE, [ = ](wxSizeEvent &){ Refresh(); }, id);
 }
 
 void DrawingArea::OnPaint(wxPaintEvent &event)
@@ -388,9 +409,11 @@ void DrawingArea::OnRedo()
 void DrawingArea::OnDraw(wxDC &dc)
 {
     if (isDrawing) {
+        // Cursor
         dc.SetPen(colorCursorPen);
         dc.SetBrush(colorCursorBrush);
         dc.DrawCircle(cursorPosition.x, cursorPosition.y, cursorRadius);
+        // Border
         dc.SetPen(colorBorderPen);
         dc.SetBrush(colorBorderBrush);
         dc.DrawRectangle(panelBorder, panelBorder,
@@ -412,9 +435,10 @@ void DrawingArea::OnDraw(wxDC &dc)
                 dc.SetBrush(colorShapeBrush);
                 for (auto& signal : {-1, 1}) {
                     auto angle = sectionAngle + signal * shapeAngle;
-                    pointsShape = GetPoints(shape, pos + angularCoordinate(0, 0, lineTickness, angle),
+                    pointsShape = GetPoints(shape, pos + angularCoordinate(lineTickness, angle),
                                             shapeLenght, angle);
-                    shapes.push_back(Shape(colorShapePen, colorShapeBrush, pointsShape));
+                    shapes.push_back(Shape(isSpline ? "Spline" : "Polygon",
+                                           colorShapePen, colorShapeBrush, pointsShape));
                     if (isSpline) {
                         dc.DrawSpline(pointsShape.size(), &pointsShape[0]);
                     } else {
@@ -430,7 +454,7 @@ void DrawingArea::OnDraw(wxDC &dc)
         dc.SetBrush(colorLineBrush);
         if (pointsLine.size() > 2 && lineTickness > 0) {
             dc.DrawSpline(pointsLine.size(), &pointsLine[0]);
-            shapes.push_back(Shape(colorLinePen, colorLineBrush, pointsLine));
+            shapes.push_back(Shape("Line", colorLinePen, colorLineBrush, pointsLine));
         }
         pointsLine.clear();
     }
@@ -466,12 +490,14 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
 
 void DrawingArea::OnReset()
 {
-    cursorPosition = wxPoint(0, 0);
+    cursorPosition = wxPoint(panelBorder, panelBorder);
+    bkp.clear();
     path.clear();
+    shapes.clear();
     Refresh();
 }
 
-bool DrawingArea::OnSaveSvg(wxString path, wxSize size)
+bool DrawingArea::OnSaveSvgDC(wxString path, wxSize size)
 {
     wxSVGFileDC svgDC (path, size.x, size.y);
     OnDraw (svgDC);
@@ -479,19 +505,43 @@ bool DrawingArea::OnSaveSvg(wxString path, wxSize size)
     return svgDC.IsOk();
 }
 
-bool DrawingArea::OnSaveSvg2(wxString path, wxSize size)
+bool DrawingArea::OnSaveSvgCustom(wxString path, wxSize size)
 {
+    int count = 0;
+    std::string polygons = "";
     for (auto& shape : shapes) {
-        wxMessageOutputDebug().Printf("Stroke: %d, %d, %d Fill: %d, %d, %d",
-                                      shape.pen.Red(), shape.pen.Green(), shape.pen.Blue(),
-                                      shape.brush.Red(), shape.brush.Green(), shape.brush.Blue());
-        wxString txt = "";
+        SVG::Shape svgShape(std::string(shape.name) + std::to_string(count++),
+                            SVG::RGB2HEX(shape.pen.Red(), shape.pen.Green(), shape.pen.Blue()),
+                            SVG::RGB2HEX(shape.brush.Red(), shape.brush.Green(), shape.brush.Blue()));
+        std::vector<SVG::Point> points;
         for (auto& point : shape.points) {
-            txt += "(" + std::to_string(point.x) + "," + std::to_string(point.y) + ");";
+            points.push_back(SVG::Point(point.x, point.y));
         }
-        wxMessageOutputDebug().Printf(txt);
+        svgShape.points = points;
+        polygons += SVG::polygon(svgShape);
     }
-    return true;
+    std::string svg = SVG::svg(size.x, size.y, polygons);
+    wxMessageOutputDebug().Printf("%s", svg);
+
+    return SVG::save(svg, std::string(path));
+}
+
+bool DrawingArea::OnSaveTxT(wxString path, wxSize size)
+{
+    std::string delimiter = "\t";
+    std::string txt = "Name" + delimiter + "Stroke" + delimiter +"Fill" + delimiter + "Points\n";
+    for (auto& shape : shapes) {
+        txt += std::string(shape.name) + delimiter;
+        txt += SVG::RGB2HEX(shape.pen.Red(), shape.pen.Green(), shape.pen.Blue()) + delimiter;
+        txt += SVG::RGB2HEX(shape.brush.Red(), shape.brush.Green(), shape.brush.Blue()) + delimiter;
+        for (auto& point : shape.points) {
+            txt += std::to_string(point.x) + "," + std::to_string(point.y) + delimiter;
+        }
+        txt += "\n";
+    }
+    wxMessageOutputDebug().Printf("%s", txt);
+    //    return SVG::save(txt, std::string(path));
+    return false;
 }
 
 void DrawingArea::SetColor(unsigned int number, wxColour colorPen, wxColour colorBrush)
@@ -563,84 +613,84 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos,
     std::vector<wxPoint> points;
     if (shape == 1) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght / 2, angle + 15),
-                  pos + angularCoordinate(0, 0, lenght, angle),
-                  pos + angularCoordinate(0, 0, lenght / 2, angle - 15),
+                  pos + angularCoordinate(lenght / 2, angle + 15),
+                  pos + angularCoordinate(lenght, angle),
+                  pos + angularCoordinate(lenght / 2, angle - 15),
                   pos};
     } else if (shape == 2) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght * 2 / 5, angle + 45),
-                  pos + angularCoordinate(0, 0, lenght, angle),
-                  pos + angularCoordinate(0, 0, lenght * 2 / 5, angle - 45),
+                  pos + angularCoordinate(lenght * 2 / 5, angle + 45),
+                  pos + angularCoordinate(lenght, angle),
+                  pos + angularCoordinate(lenght * 2 / 5, angle - 45),
                   pos};
     } else if (shape == 3) {
         points = {pos,
-            pos + angularCoordinate(0, 0, lenght * 2 / 6, angle + 60),
-            pos + angularCoordinate(0, 0, lenght * 4 / 6, angle + 20),
-            pos + angularCoordinate(0, 0, lenght, angle),
-            pos + angularCoordinate(0, 0, lenght * 4 / 6, angle - 20),
-            pos + angularCoordinate(0, 0, lenght * 2 / 6, angle - 60),
+            pos + angularCoordinate(lenght * 2 / 6, angle + 60),
+            pos + angularCoordinate(lenght * 4 / 6, angle + 20),
+            pos + angularCoordinate(lenght, angle),
+            pos + angularCoordinate(lenght * 4 / 6, angle - 20),
+            pos + angularCoordinate(lenght * 2 / 6, angle - 60),
             pos
         };
     } else if (shape == 4) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght, angle + 15),
-                  pos + angularCoordinate(0, 0, lenght * 3 / 5, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 15),
+                  pos + angularCoordinate(lenght, angle + 15),
+                  pos + angularCoordinate(lenght * 3 / 5, angle),
+                  pos + angularCoordinate(lenght, angle - 15),
                   pos};
     } else if (shape == 5) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght, angle + 20),
-                  pos + angularCoordinate(0, 0, lenght * 1 / 5, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle + 15),
-                  pos + angularCoordinate(0, 0, lenght * 2 / 5, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle + 5),
-                  pos + angularCoordinate(0, 0, lenght * 3 / 5, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 5),
-                  pos + angularCoordinate(0, 0, lenght * 2 / 5, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 15),
-                  pos + angularCoordinate(0, 0, lenght * 1 / 5, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 20),
+                  pos + angularCoordinate(lenght, angle + 20),
+                  pos + angularCoordinate(lenght * 1 / 5, angle),
+                  pos + angularCoordinate(lenght, angle + 15),
+                  pos + angularCoordinate(lenght * 2 / 5, angle),
+                  pos + angularCoordinate(lenght, angle + 5),
+                  pos + angularCoordinate(lenght * 3 / 5, angle),
+                  pos + angularCoordinate(lenght, angle - 5),
+                  pos + angularCoordinate(lenght * 2 / 5, angle),
+                  pos + angularCoordinate(lenght, angle - 15),
+                  pos + angularCoordinate(lenght * 1 / 5, angle),
+                  pos + angularCoordinate(lenght, angle - 20),
                   pos};
     } else if (shape == 6) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght, angle + 45),
-                  pos + angularCoordinate(0, 0, lenght * 2 / 6, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle + 30),
-                  pos + angularCoordinate(0, 0, lenght * 3 / 6, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle + 10),
-                  pos + angularCoordinate(0, 0, lenght * 4 / 6, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 10),
-                  pos + angularCoordinate(0, 0, lenght * 3 / 6, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 30),
-                  pos + angularCoordinate(0, 0, lenght * 2 / 6, angle),
-                  pos + angularCoordinate(0, 0, lenght, angle - 45),
+                  pos + angularCoordinate(lenght, angle + 45),
+                  pos + angularCoordinate(lenght * 2 / 6, angle),
+                  pos + angularCoordinate(lenght, angle + 30),
+                  pos + angularCoordinate(lenght * 3 / 6, angle),
+                  pos + angularCoordinate(lenght, angle + 10),
+                  pos + angularCoordinate(lenght * 4 / 6, angle),
+                  pos + angularCoordinate(lenght, angle - 10),
+                  pos + angularCoordinate(lenght * 3 / 6, angle),
+                  pos + angularCoordinate(lenght, angle - 30),
+                  pos + angularCoordinate(lenght * 2 / 6, angle),
+                  pos + angularCoordinate(lenght, angle - 45),
                   pos};
     } else if (shape == 7) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght / 2, angle + 70),
-                  pos + angularCoordinate(0, 0, lenght / 2, angle + 50),
-                  pos + angularCoordinate(0, 0, lenght / 2, angle + 10),
-                  pos + angularCoordinate(0, 0, lenght / 2, angle - 10),
-                  pos + angularCoordinate(0, 0, lenght / 2, angle - 50),
-                  pos + angularCoordinate(0, 0, lenght / 2, angle - 70),
+                  pos + angularCoordinate(lenght / 2, angle + 70),
+                  pos + angularCoordinate(lenght / 2, angle + 50),
+                  pos + angularCoordinate(lenght / 2, angle + 10),
+                  pos + angularCoordinate(lenght / 2, angle - 10),
+                  pos + angularCoordinate(lenght / 2, angle - 50),
+                  pos + angularCoordinate(lenght / 2, angle - 70),
                   pos};
     } else if (shape == 8) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght, angle + 20),
-                  pos + angularCoordinate(0, 0, lenght, angle + 5),
-                  pos + angularCoordinate(0, 0, lenght, angle - 20),
+                  pos + angularCoordinate(lenght, angle + 20),
+                  pos + angularCoordinate(lenght, angle + 5),
+                  pos + angularCoordinate(lenght, angle - 20),
                   pos};
     } else if (shape == 9) {
         points = {pos,
-                  pos + angularCoordinate(0, 0, lenght, angle + 60),
-                  pos + angularCoordinate(0, 0, lenght * 2 / 5, angle - 45),
+                  pos + angularCoordinate(lenght, angle + 60),
+                  pos + angularCoordinate(lenght * 2 / 5, angle - 45),
                   pos,
-                  pos + angularCoordinate(0, 0, lenght * 2 / 5, angle + 45),
-                  pos + angularCoordinate(0, 0, lenght, angle - 60),
+                  pos + angularCoordinate(lenght * 2 / 5, angle + 45),
+                  pos + angularCoordinate(lenght, angle - 60),
                   pos};
     } else {
-        points = {pos, pos + angularCoordinate(0, 0, lenght, angle)};
+        points = {pos, pos + angularCoordinate(lenght, angle)};
     }
 
     return points;

@@ -26,7 +26,14 @@
 
 inline wxPoint angularCoordinate(double x, double y, unsigned lenght, unsigned angle)
 {
+    // Origin (x,y)
     return wxPoint(Cos(x, lenght, angle), Sin(y, lenght, angle));
+}
+
+inline wxPoint angularCoordinate(unsigned lenght, unsigned angle)
+{
+    // Origin (0,0)
+    return wxPoint(Cos(0, lenght, angle), Sin(0, lenght, angle));
 }
 
 class App : public wxApp {
@@ -103,8 +110,9 @@ public:
     DrawingArea(wxFrame *parent, int id, wxSize size);
 
     bool IsEmpty();
-    bool OnSaveSvg(wxString path, wxSize size);
-    bool OnSaveSvg2(wxString path, wxSize size);
+    bool OnSaveSvgDC(wxString path, wxSize size);
+    bool OnSaveSvgCustom(wxString path, wxSize size);
+    bool OnSaveTxT(wxString path, wxSize size);
     unsigned GetValue(unsigned number);
     void OnMouseClicked(wxMouseEvent &event);
     void OnRedo();
@@ -117,10 +125,10 @@ public:
 
 private:
     // Cursor
+    wxColour colorBorderPen, colorBorderBrush;
     wxColour colorCursorPen, colorCursorBrush;
     wxColour colorLinePen, colorLineBrush;
     wxColour colorShapePen, colorShapeBrush;
-    wxColour colorBorderPen, colorBorderBrush;
     wxPoint cursorPosition;
     unsigned cursorRadius;
 
@@ -129,11 +137,12 @@ private:
 
     // Draw
     struct Shape {
+        wxString name;
         wxColour pen, brush;
         std::vector<wxPoint> points;
 
-        Shape(wxColour pen, wxColour brush, std::vector<wxPoint> points)
-            : pen(pen), brush(brush), points(points) {}
+        Shape(wxString name, wxColour pen, wxColour brush, std::vector<wxPoint> points)
+            : name(name), pen(pen), brush(brush), points(points) {}
     };
 
     struct Path {
@@ -143,19 +152,20 @@ private:
         Path(wxPoint point) : begin(point), end(point), points({point}) {}
     };
 
-    std::vector<Shape> shapes;
-    std::vector<Path> path;
     std::vector<Path> bkp;
+    std::vector<Path> path;
+    std::vector<Shape> shapes;
 
     bool isSpline;
-    unsigned panelBorder;
     unsigned limitLength;
     unsigned lineTickness;
+    unsigned panelBorder;
     unsigned shape;
     unsigned shapeAngle;
     unsigned shapeLenght;
 
     void OnDraw(wxDC& dc);
     void OnPaint(wxPaintEvent &event);
+
     std::vector<wxPoint> GetPoints(unsigned shape, wxPoint pos, unsigned lenght, unsigned angle);
 };

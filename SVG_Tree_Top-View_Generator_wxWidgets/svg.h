@@ -45,6 +45,45 @@ class SVG {
 
 public:
 
+    struct Point {
+
+        double x = 0.0;
+        double y = 0.0;
+
+        Point(double x, double y) : x(x), y(y) {};
+        std::string toStr() { return std::to_string(x) + "," + std::to_string(y); }
+    };
+
+    struct Shape {
+        std::string name;
+        std::string stroke, fill;
+        std::vector<Point> points;
+
+        Shape(std::string name, std::string stroke, std::string fill)
+            : name(name), stroke(stroke), fill(fill), points({}) {}
+        Shape(std::string name, std::string stroke, std::string fill, std::vector<Point> points)
+            : name(name), stroke(stroke), fill(fill), points(points) {}
+    };
+
+    static const std::string RGB2HEX(unsigned R, unsigned G, unsigned B) {
+        auto int2hex = [](unsigned value) {
+            std::string digits = "0123456789ABCDEF";
+            std::string result = "";
+            if (value < 16) {
+                result.push_back('0');
+                result.push_back(digits[value % 16]);
+            } else {
+                while (value != 0) {
+                    result = digits[value % 16] + result;
+                    value /= 16;
+                }
+            }
+            return result;
+        };
+
+        return "#" + int2hex(R) + int2hex(G) + int2hex(B);
+    }
+
     static const std::string svg(int width, int height, const std::string& figure)
     {
         /* Jpenrici */
@@ -119,173 +158,45 @@ public:
         };
     }
 
-    static const std::string clone(std::string reference, int angle, double center_X,
-                                   double center_Y, double new_X, double new_Y)
-    {
-        static int counter = 0;
+    static const std::string polygon(Shape shape) {
 
-        new_X += center_X < 0.0 ? -center_X : 0.0;
-        new_Y += center_Y < 0.0 ? -center_Y : 0.0;
-
-        // Matrix - Rotate and Translate
-        double a = angle * PI / 180.0;
-        std::vector<double> matrix{
-            cos(a), -sin(a), -center_X * cos(a) + center_Y * sin(a) + center_X + new_X,
-            sin(a),  cos(a), -center_X * sin(a) - center_Y * cos(a) + center_Y + new_Y,
-            0,       0,      1
-        };
-        std::string transform = "";
-        std::vector<int> index{ 0, 3, 1, 4, 2, 5 };
-        for (auto & i : index) {
-            transform += std::to_string(matrix[i]) + " ";
+        if (shape.points.empty()) {
+            return "<!-- Empty -->\n";
         }
 
-        std::string label = "Clone_" + reference + "_" + std::to_string(counter++);
-
-        return {
-            "     <use \n"
-            "        x=\"0\"\n"
-            "        y=\"0\"\n"
-            "        xlink:href=\"#" + reference + "\"\n"
-            "        id=\"" + label + "\"\n"
-            "        transform=\"matrix( " + transform + ")\"\n"
-            "        width=\"100%\"\n"
-            "        height=\"100%\" />"
-        };
-    }
-
-    static const std::string line(double x, double y, double length, int angle,
-                                  int inner_angle, std::string label = "")
-    {
-        static int counter = 0;
-
-        std::string p1 = std::to_string(x) + "," + std::to_string(y);
-        std::string p2 = std::to_string(Cos(x, length, angle)) + "," + std::to_string(Sin(y, length, angle));
-
-        std::string c1 = std::to_string(Cos(x, length / 2, angle + inner_angle)) + "," + std::to_string(Sin(y, length / 2, angle + inner_angle));
-        std::string c2 = std::to_string(Cos(x, length / 2, angle - inner_angle)) + "," + std::to_string(Sin(y, length / 2, angle - inner_angle));
-        c1 += " " + c1;
-        c2 += " " + c2;
-
-        if (label.empty()) {
-            label = "#Path";
+        std::string path = "";
+        for (unsigned i = 0; i < shape.points.size() - 1; i++) {
+            path += shape.points[i].toStr() + " L ";
         }
-        label += "_" + std::to_string(counter++);
-
+        path += shape.points[shape.points.size() - 1].toStr();
+        shape.name = shape.name.empty() ? "path" : shape.name;
+        shape.fill = shape.fill.empty() ? "#FFFFFF" : shape.fill;
+        shape.stroke = shape.stroke.empty() ? "#000000" : shape.stroke;
         return {
             "     <path\n"
-            "        id=\"" + label + "\"\n"
-            "        style=\"opacity:1.0;fill:#00FF00;stroke:#000000;stroke-width:0.5;stroke-opacity:1\"\n"
-            "        d=\"M " + p1 + " C " + c1 + " " + p2 + " " + c2 + " " + p1 + " Z\" />"
+            "        id=\"" + shape.name + "\"\n"
+            "        style=\"opacity:1.0;fill:" + shape.fill + ";stroke:" + shape.stroke + ";stroke-width:0.5;stroke-opacity:1\"\n"
+            "        d=\"M " + path + " Z\" />\n"
         };
     }
 
-    static void save(const std::string& text, std::string filename = "")
+    static bool save(const std::string& text, std::string path = "")
     {
-        if (filename.empty()) {
-            filename = "out";
+        if (path.empty()) {
+            path = "svgOut.txt";
         }
 
         try {
-            std::ofstream file(filename + ".svg", std::ios::out);
+            std::ofstream file(path, std::ios::out);
             file << text;
             file.close();
         }
         catch (const std::exception& e) {
             std::cout << "Error handling file writing.\n";
             std::cerr << e.what() << "\n";
-        }
-    }
-
-};
-
-struct Point {
-
-    double x = 0.0;
-    double y = 0.0;
-
-    Point(double x, double y) : x(x), y(y) {};
-};
-
-struct Line {
-
-    double x0 = 0.0;
-    double y0 = 0.0;
-    double x1 = 0.0;
-    double y1 = 0.0;
-    double length = 0.0;
-    int angle = 0;
-    std::string label = "";
-
-    Line() {};
-
-    Line(Point origin, double length, int angle, std::string label = "")
-        : x0(origin.x),
-        y0(origin.y),
-        x1(Cos(origin.x, length, angle)),
-        y1(Sin(origin.y, length, angle)),
-        length(length),
-        angle(angle),
-        label(label.empty() ? "Line" : label) {};
-
-    bool intersection(Line line_1, Line line_2, double& xi, double& yi)
-    {
-        // Line 1 (x1, y1) - (x2, y2)
-        double x1 = line_1.x0;
-        double y1 = line_1.y0;
-        double x2 = line_1.x1;
-        double y2 = line_1.y1;
-
-        // Line 2 (x3, y3) - (x4, y4)
-        double x3 = line_2.x0;
-        double y3 = line_2.y0;
-        double x4 = line_2.x1;
-        double y4 = line_2.y1;
-
-        double d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (d == 0) {   // Two lines are parallel or coincident ...
             return false;
         }
 
-        double t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / d;
-        double u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / d;
-
-        if (t >= 0.0 && t <= 1.0 && u >= 0 && u <= 1.0) {
-            xi = (x0 + t * (x1 - x0));
-            yi = (y0 + t * (y1 - y0));
-            return true;
-        }
-
-        // Lines do not intersect
-        return false;
+        return true;
     }
-
-    bool intersection(Line line_2, double xi = 0.0, double yi = 0.0)
-    {
-        return intersection(*this, line_2, xi, yi);
-    }
-
-    bool intersection(std::vector<Line>& lines)
-    {
-        for (auto& e : lines) {
-            if (intersection(e)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    const std::string info()
-    {
-        return label + " (" + std::to_string(x0) + "," + std::to_string(y0) + ")-("
-            + std::to_string(x1) + "," + std::to_string(y1) + "): A = "
-            + std::to_string(angle) + " : L = " + std::to_string(length);
-    }
-
-    const std::string svg(int inner_angle = 0)
-    {
-        return SVG::line(x0, y0, length, angle, inner_angle, label);
-    }
-
 };
