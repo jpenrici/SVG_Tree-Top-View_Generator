@@ -1,11 +1,12 @@
 #pragma once
 
-#include <iostream>
+#include <ctime>
 #include <fstream>
-#include <vector>
-#include <string>
-#include <random>
+#include <iostream>
 #include <math.h>
+#include <random>
+#include <string>
+#include <vector>
 
 constexpr auto PI = 3.1415926;
 
@@ -44,6 +45,17 @@ inline int LineAngle(double x0, double y0, double x1, double y1)
 class SVG {
 
 public:
+
+    struct Metadata {
+        std::string creator = "SVG tree image in top view created automatically by algorithm in C++.";
+        std::string title = "SVG Tree Top View";
+        std::string publisherAgentTitle = "";
+        std::string date = "";
+
+        Metadata(){};
+        Metadata(std::string creator, std::string title, std::string date, std::string publisher)
+            : creator(creator), title(title), date(date), publisherAgentTitle(publisher) {}
+    };
 
     struct Point {
 
@@ -84,9 +96,21 @@ public:
         return "#" + int2hex(R) + int2hex(G) + int2hex(B);
     }
 
-    static const std::string svg(int width, int height, const std::string& figure)
+    static const std::string svg(int width, int height, const std::string& figure,
+                                 Metadata metadata)
     {
-        /* Jpenrici */
+
+        std::string now = "";
+        try {
+            std::time_t t = std::time(nullptr);
+            std::tm *const pTm = std::localtime(&t);
+            now = std::to_string(1900 + + pTm->tm_year);
+        } catch (...) {
+           // pass
+        }
+
+        metadata.date = metadata.date == "" ? now : metadata.date;
+
         return {
             "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
             "<svg\n"
@@ -102,7 +126,7 @@ public:
             "   version=\"1.1\"\n"
             "   id=\"svg8\">\n"
             "  <title\n"
-            "     id=\"title1\">Tree Top View</title>\n"
+            "     id=\"title1\">" + metadata.title + "</title>\n"
             "  <defs\n"
             "     id=\"defs1\" />\n"
             "  <metadata\n"
@@ -113,11 +137,11 @@ public:
             "        <dc:format>image/svg+xml</dc:format>\n"
             "        <dc:type\n"
             "           rdf:resource=\"http://purl.org/dc/dcmitype/StillImage\" />\n"
-            "        <dc:title>Tree Top View</dc:title>\n"
-            "        <dc:date>2022</dc:date>\n"
+            "        <dc:title>" + metadata.title + "</dc:title>\n"
+            "        <dc:date>" + metadata.date + "</dc:date>\n"
             "        <dc:publisher>\n"
             "          <cc:Agent>\n"
-            "            <dc:title>Open Clip Art Library</dc:title>\n"
+            "            <dc:title>" + metadata.publisherAgentTitle + "</dc:title>\n"
             "          </cc:Agent>\n"
             "        </dc:publisher>\n"
             "        <dc:subject>\n"
@@ -130,12 +154,12 @@ public:
             "        </dc:subject>\n"
             "        <dc:creator>\n"
             "          <cc:Agent>\n"
-            "            <dc:title>jpenrici (https://github.com/jpenrici/SVG_Image_Tree/tree/master/SVG_Image_Tree_Top_View)</dc:title>\n"
+            "            <dc:title>" + metadata.creator + "</dc:title>\n"
             "          </cc:Agent>\n"
             "        </dc:creator>\n"
             "        <cc:license\n"
             "           rdf:resource=\"http://creativecommons.org/publicdomain/zero/1.0/\" />\n"
-            "        <dc:description>SVG tree image in top view created automatically by algorithm in C++. Leaves are clones of the original figure placed in the upper left corner when SVG is opened in Inkscape.</dc:description>\n"
+            "        <dc:description>SVG tree image in top view created automatically by algorithm in C++.</dc:description>\n"
             "      </cc:Work>\n"
             "      <cc:License\n"
             "         rdf:about=\"http://creativecommons.org/publicdomain/zero/1.0/\">\n"

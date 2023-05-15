@@ -116,4 +116,3 @@ private:
         wxTextCtrl *width, *height;
     };
 };
-

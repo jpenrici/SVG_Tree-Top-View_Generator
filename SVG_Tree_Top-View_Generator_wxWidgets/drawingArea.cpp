@@ -313,7 +313,9 @@ bool DrawingArea::OnSaveSvg(wxString path)
         svgShape.points = points;
         polygons += SVG::polygon(svgShape);
     }
-    std::string svg = SVG::svg(currentSize.x, currentSize.y, polygons);
+
+    SVG::Metadata metadata;
+    std::string svg = SVG::svg(currentSize.x, currentSize.y, polygons, metadata);
     wxMessageOutputDebug().Printf("%s", svg);
 
     return SVG::save(svg, std::string(path));
