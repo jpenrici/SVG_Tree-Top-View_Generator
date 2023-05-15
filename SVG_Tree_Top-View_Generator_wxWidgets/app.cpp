@@ -6,7 +6,7 @@ bool App::OnInit()
         return false;
     }
 
-    AppFrame *frame = new AppFrame("wxWidgtes App to Draw Trees", wxSize(960, 680));
+    AppFrame *frame = new AppFrame("wxWidgtes App to Draw Trees", wxSize(960, 700));
     frame->Show();
 
     SetTopWindow(frame);
@@ -25,7 +25,6 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     submenu1->Append(ID_Menu_SaveDCsvg, "&SVG [wxWidgets]\tCtrl-Shift-S", "Save SVG file using wxWidgets library.");
 
     menu[0] = new wxMenu;
-    menu[0]->Append(ID_Menu_New, "&New", "New Drawing Area.");
     menu[0]->AppendSubMenu(submenu1, "Save As");
     menu[0]->AppendSeparator();
     menu[0]->Append(wxID_EXIT);
@@ -36,16 +35,36 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     menu[1]->AppendSeparator();
     menu[1]->Append(ID_Menu_Reset, "&Reset\tDelete", "Clear drawing area.");
 
+    std::vector<std::vector<unsigned> > daSize = {{150, 150}, {300, 300}, {480, 480},
+                                                  {500, 500}, {600, 480}, {850, 500}};
+    wxMenu *submenu2 = new wxMenu;
+    for(unsigned i = 0; i < daSize.size(); i++) {
+        submenu2->Append(ID_Array_Menu_Size + i, std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back()));
+        submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent &event){
+                drawingArea->Resize(wxSize(daSize[i].front(),daSize[i].back()));
+                info->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
+                                   + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
+            }, ID_Array_Menu_Size + i);
+    }
+    submenu2->Append(ID_Array_Menu_Size + daSize.size(), "Custom\tCtrl-N");
+    submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent &event){
+            if (!drawingArea->Resize(NewDialog(drawingArea->GetSize()).GetSize())) {
+                SetStatusText("Invalid size!");
+            }}, ID_Array_Menu_Size + daSize.size());
+
     menu[2] = new wxMenu;
-    menu[2]->Append(wxID_ABOUT, "&About\tF1", "Show about dialog.");
+    menu[2]->AppendSubMenu(submenu2, "New");
+
+    menu[3] = new wxMenu;
+    menu[3]->Append(wxID_ABOUT, "&About\tF1", "Show about dialog.");
 
     menuBar = new wxMenuBar;
     menuBar->Append(menu[0], "&File");
     menuBar->Append(menu[1], "&Edit");
-    menuBar->Append(menu[2], "&Help");
+    menuBar->Append(menu[2], "&Drawing Area");
+    menuBar->Append(menu[3], "&Help");
     SetMenuBar(menuBar);
 
-    Bind(wxEVT_MENU, &AppFrame::OnNew, this, ID_Menu_New);
     Bind(wxEVT_MENU, &AppFrame::OnSave, this, ID_Menu_SaveDCsvg);
     Bind(wxEVT_MENU, &AppFrame::OnSave, this, ID_Menu_SaveHsvg);
     Bind(wxEVT_MENU, &AppFrame::OnSave, this, ID_Menu_SaveTxt);
@@ -57,13 +76,17 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     // Font
     wxFont font(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    wxFont font1(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
     // Text
+    info = new wxStaticText(this, ID_Label_Info, "");
+    info->SetFont(font1);
+
     std::vector<wxString> labels = {"Angle", "Lenght", "Distance", "Tickness"};
     std::vector<wxString> tips = {"Angle of the leaf on the branch", "Leaf lenght",
                                   "Minimum distance between sheets", "Branch thickness"};
     for (unsigned i = 0; i < 4; i++) {
-        label[i] = new wxStaticText(this, ID_wxLabel, labels[i]);
+        label[i] = new wxStaticText(this, ID_Label, labels[i]);
         label[i]->SetToolTip(tips[i]);
         label[i]->SetFont(font);
     }
@@ -74,10 +97,10 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     drawingArea->SetShape(0); // Only lines
 
     // Slider
-    slider[0] = new wxSlider(this, ID_wxSlider + 0, 50, 0, 100);   // shapeAngle
-    slider[1] = new wxSlider(this, ID_wxSlider + 1, 50, 0, 100);   // shapeLenght
-    slider[2] = new wxSlider(this, ID_wxSlider + 2, 50, 0, 100);   // limitLength
-    slider[3] = new wxSlider(this, ID_wxSlider + 3, 20, 0, 100);   // lineTickness
+    slider[0] = new wxSlider(this, ID_Array_Slider + 0, 50, 0, 100);   // shapeAngle
+    slider[1] = new wxSlider(this, ID_Array_Slider + 1, 50, 0, 100);   // shapeLenght
+    slider[2] = new wxSlider(this, ID_Array_Slider + 2, 50, 0, 100);   // limitLength
+    slider[3] = new wxSlider(this, ID_Array_Slider + 3, 20, 0, 100);   // lineTickness
 
     for (unsigned i = 0; i < 4; ++i) {
         slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
@@ -88,7 +111,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     }
 
     // Check Box
-    checkBox[0] = new wxCheckBox(this, ID_chkBox_Spline, "SpLine");
+    checkBox[0] = new wxCheckBox(this, ID_ChkBox_Spline, "SpLine");
     checkBox[0]->SetToolTip("Draw in Spline or Polygon.");
     checkBox[0]->SetValue(false);
     drawingArea->SetStyle();
@@ -96,9 +119,9 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     checkBox[0]->Bind(wxEVT_CHECKBOX, [ = ](wxCommandEvent &) {
             checkBox[1]->SetValue(false);
             drawingArea->SetStyle(checkBox[0]->GetValue());
-            drawingArea->Refresh(); }, ID_chkBox_Spline);
+            drawingArea->Refresh(); }, ID_ChkBox_Spline);
 
-    checkBox[1] = new wxCheckBox(this, ID_chkBox_Random, "Greens");
+    checkBox[1] = new wxCheckBox(this, ID_ChkBox_Random, "Greens");
     checkBox[1]->SetToolTip("Randomize color.");
     checkBox[1]->SetValue(false);
     drawingArea->SetStyle();
@@ -107,17 +130,19 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
             checkBox[0]->SetValue(false);
             drawingArea->SetStyle(checkBox[0]->GetValue());
             if (checkBox[1]->GetValue()) {
+                SetStatusText("Use the R key to randomize again.");
                 drawingArea->SetRandomColor(wxColour(0, 80, 0), wxColour(0, 200, 0));
             } else {
+                SetStatusText("");
                 drawingArea->SetRandomColor();
                 drawingArea->SetColor(1, colorPCtrl[1]->GetColour(), colorPCtrl[1]->GetColour());
             }
-        }, ID_chkBox_Random);
+        }, ID_ChkBox_Random);
 
     // ColourPickerCtrl
-    colorPCtrl[0] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 0, wxColor(0, 102, 0, 255));
-    colorPCtrl[1] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 1, wxColor(50, 200, 50, 255));
-    colorPCtrl[2] = new wxColourPickerCtrl(this, ID_wxColourPickerCtrl + 2, wxColor(130, 60, 0, 255));
+    colorPCtrl[0] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 0, wxColor(0, 102, 0, 255));
+    colorPCtrl[1] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 1, wxColor(50, 200, 50, 255));
+    colorPCtrl[2] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 2, wxColor(130, 60, 0, 255));
 
     tips = {"Leaf border color", "Leaf fill color", "Branch color"};
     for (unsigned i = 0; i < 3; ++i) {
@@ -142,14 +167,15 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[0] = new wxBoxSizer(wxHORIZONTAL);
     hBox[1] = new wxBoxSizer(wxHORIZONTAL);
     hBox[2] = new wxBoxSizer(wxHORIZONTAL);
+    hBox[3] = new wxBoxSizer(wxHORIZONTAL);
 
     for (unsigned i = 0; i < 10; ++i) {
         wxString img = "Resources/icon_line" + std::to_string(i) + ".png";
-        bmpBtn[i] = new wxBitmapButton(this, ID_wxBitmapButton + i, wxBitmap(img, wxBITMAP_TYPE_ANY));
+        bmpBtn[i] = new wxBitmapButton(this, ID_Array_BitmapButton + i, wxBitmap(img, wxBITMAP_TYPE_ANY));
         bmpBtn[i]->SetSize(bmpBtn[i]->GetBestSize());
         bmpBtn[i]->SetToolTip("Leaf " + std::to_string(i + 1));
         bmpBtn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &event){
-            currentShape = event.GetId() % ID_wxBitmapButton;
+            currentShape = event.GetId() % ID_Array_BitmapButton;
             drawingArea->SetShape(currentShape);
         });
         vBox[1]->Add(bmpBtn[i], 0, wxLEFT, 5);
@@ -157,31 +183,33 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     vBox[1]->Add(checkBox[0], 0, wxTOP | wxBOTTOM, 5); // Spline
     vBox[1]->Add(checkBox[1], 0, wxTOP | wxBOTTOM, 5); // Random Color
 
-    hBox[0]->Add(vBox[1]);  // Buttons
-    hBox[0]->Add(drawingArea, 0, wxLEFT, 10);
+    hBox[0]->Add(info, 1, wxEXPAND);            // Info
+    hBox[1]->Add(vBox[1]);                      // Buttons
+    hBox[1]->Add(drawingArea, 0, wxLEFT, 10);
 
-    hBox[1]->Add(colorPCtrl[0], 0); // Leaf border color
-    hBox[1]->Add(colorPCtrl[1], 0); // Leaf color
+    hBox[2]->Add(colorPCtrl[0], 0);             // Leaf border color
+    hBox[2]->Add(colorPCtrl[1], 0);             // Leaf color
 
-    hBox[2]->Add(hBox[1], 0, wxRIGHT, 5);
-    hBox[2]->Add(label[0]); // Shape Angle
-    hBox[2]->Add(slider[0], 0, wxRIGHT, 5);
-    hBox[2]->Add(label[1]); // Shape Lenght
-    hBox[2]->Add(slider[1], 0, wxRIGHT, 5);
-    hBox[2]->Add(label[2]); // Distance - Limit Lenght
-    hBox[2]->Add(slider[2], 0, wxRIGHT, 5);
-    hBox[2]->Add(colorPCtrl[2], 0, wxRIGHT, 5); // Branch color
-    hBox[2]->Add(label[3]); // Line Tickness - Branch
-    hBox[2]->Add(slider[3], 0, wxRIGHT, 5);
+    hBox[3]->Add(hBox[2], 0, wxRIGHT, 5);
+    hBox[3]->Add(label[0]);                     // Shape Angle
+    hBox[3]->Add(slider[0], 0, wxRIGHT, 5);
+    hBox[3]->Add(label[1]);                     // Shape Lenght
+    hBox[3]->Add(slider[1], 0, wxRIGHT, 5);
+    hBox[3]->Add(label[2]);                     // Distance - Limit Lenght
+    hBox[3]->Add(slider[2], 0, wxRIGHT, 5);
+    hBox[3]->Add(colorPCtrl[2], 0, wxRIGHT, 5); // Branch color
+    hBox[3]->Add(label[3]);                     // Line Tickness - Branch
+    hBox[3]->Add(slider[3], 0, wxRIGHT, 5);
 
     vBox[0]->AddSpacer(10);
-    vBox[0]->Add(hBox[0], 1, wxEXPAND); // Buttons and DrawingArea
+    vBox[0]->Add(hBox[0], 1, wxEXPAND); // Info
+    vBox[0]->Add(hBox[1], 1, wxEXPAND); // Buttons and DrawingArea
     vBox[0]->AddSpacer(10);
-    vBox[0]->Add(hBox[2]);  // Buttons and Sliders
+    vBox[0]->Add(hBox[3]);              // Buttons and Sliders
     vBox[0]->AddSpacer(5);
 
     // Status Bar
-    statusBar = new wxStatusBar(this, ID_wxStatuBar);
+    statusBar = new wxStatusBar(this, ID_StatuBar);
     statusBar->SetFont(font);
     statusBar->SetMinHeight(30);
 
@@ -226,7 +254,6 @@ void AppFrame::OnSave(wxCommandEvent &event)
     if (dialog.ShowModal() == wxID_OK) {
         auto result = false;
         auto path = dialog.GetPath();
-        auto size = drawingArea->GetBestSize();
         switch (event.GetId()) {
         case ID_Menu_SaveDCsvg:
             result = drawingArea->OnSaveSvgDC(path);
@@ -246,13 +273,6 @@ void AppFrame::OnSave(wxCommandEvent &event)
         } else {
             SetStatusText("There was something wrong!");
         }
-    }
-}
-
-void AppFrame::OnNew(wxCommandEvent &event)
-{
-    if (!drawingArea->Resize(NewDialog(drawingArea->GetSize()).GetSize())) {
-        SetStatusText("Invalid size!");
     }
 }
 
