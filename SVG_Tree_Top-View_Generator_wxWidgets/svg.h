@@ -68,13 +68,14 @@ public:
 
     struct Shape {
         std::string name;
-        std::string stroke, fill;
+        std::string fill, stroke;
+        double strokeWidth;
         std::vector<Point> points;
 
-        Shape(std::string name, std::string stroke, std::string fill)
-            : name(name), stroke(stroke), fill(fill), points({}) {}
-        Shape(std::string name, std::string stroke, std::string fill, std::vector<Point> points)
-            : name(name), stroke(stroke), fill(fill), points(points) {}
+        Shape(std::string name,  std::string fill, std::string stroke, double strokeWidth)
+            : name(name), fill(fill), stroke(stroke), strokeWidth(strokeWidth), points({}) {}
+        Shape(std::string name,  std::string fill, std::string stroke, double strokeWidth, std::vector<Point> points)
+            : name(name), fill(fill), stroke(stroke), strokeWidth(strokeWidth), points(points) {}
     };
 
     static const std::string RGB2HEX(unsigned R, unsigned G, unsigned B) {
@@ -99,7 +100,6 @@ public:
     static const std::string svg(int width, int height, const std::string& figure,
                                  Metadata metadata)
     {
-
         std::string now = "";
         try {
             std::time_t t = std::time(nullptr);
@@ -182,25 +182,47 @@ public:
         };
     }
 
+    static const std::string polyline(Shape shape) {
+
+        if (shape.points.empty()) {
+            return "<!-- Empty -->\n";
+        }
+
+        std::string values = "";
+        for (unsigned i = 0; i < shape.points.size(); i++) {
+            values += shape.points[i].toStr() + " ";
+        }
+        shape.name = shape.name.empty() ? "polyline" : shape.name;
+        shape.stroke = shape.stroke.empty() ? "#000000" : shape.stroke;
+        std::string strokeWidth = std::to_string(shape.strokeWidth);
+        return {
+            "     <polyline\n"
+            "        id=\"" + shape.name + "\"\n"
+            "        style=\"opacity:1.0;fill:none;stroke:" + shape.stroke + ";stroke-width:" + strokeWidth + ";stroke-opacity:1\"\n"
+            "        points=\"" + values + "\" />\n"
+        };
+    }
+
     static const std::string polygon(Shape shape) {
 
         if (shape.points.empty()) {
             return "<!-- Empty -->\n";
         }
 
-        std::string path = "";
+        std::string values = "";
         for (unsigned i = 0; i < shape.points.size() - 1; i++) {
-            path += shape.points[i].toStr() + " L ";
+            values += shape.points[i].toStr() + " L ";
         }
-        path += shape.points[shape.points.size() - 1].toStr();
-        shape.name = shape.name.empty() ? "path" : shape.name;
+        values += shape.points[shape.points.size() - 1].toStr();
+        shape.name = shape.name.empty() ? "polygon" : shape.name;
         shape.fill = shape.fill.empty() ? "#FFFFFF" : shape.fill;
         shape.stroke = shape.stroke.empty() ? "#000000" : shape.stroke;
+        std::string strokeWidth = std::to_string(shape.strokeWidth);
         return {
             "     <path\n"
             "        id=\"" + shape.name + "\"\n"
-            "        style=\"opacity:1.0;fill:" + shape.fill + ";stroke:" + shape.stroke + ";stroke-width:0.5;stroke-opacity:1\"\n"
-            "        d=\"M " + path + " Z\" />\n"
+            "        style=\"opacity:1.0;fill:" + shape.fill + ";stroke:" + shape.stroke + ";stroke-width:" + strokeWidth + ";stroke-opacity:1\"\n"
+            "        d=\"M " + values + " Z\" />\n"
         };
     }
 

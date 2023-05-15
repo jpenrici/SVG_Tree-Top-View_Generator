@@ -50,12 +50,12 @@ private:
     struct Shape {
         wxString name;
         wxColour pen, brush;
-        unsigned tickness;
+        unsigned lineWidth;
         std::vector<wxPoint> points;
 
-        Shape(wxString name, wxColour pen, wxColour brush, unsigned tickness,
+        Shape(wxString name, wxColour pen, wxColour brush, unsigned lineWidth,
               std::vector<wxPoint> points)
-            : name(name), pen(pen), brush(brush), tickness(tickness),
+            : name(name), pen(pen), brush(brush), lineWidth(lineWidth),
             points(points) {}
     };
 
@@ -73,17 +73,15 @@ private:
     bool isSpline;
 
     unsigned limitLength;
-    unsigned lineTickness;
+    unsigned lineWidth;
     unsigned panelBorder;
     unsigned shape;
     unsigned shapeAngle;
     unsigned shapeLenght;
 
-    void OnDraw(wxDC& dc);
+    void OnDraw(wxDC &dc);
     void OnPaint(wxPaintEvent &event);
     void OnUpdate();
 
     std::vector<wxPoint> GetPoints(unsigned shape, wxPoint pos, unsigned lenght, unsigned angle);
 };
-
-

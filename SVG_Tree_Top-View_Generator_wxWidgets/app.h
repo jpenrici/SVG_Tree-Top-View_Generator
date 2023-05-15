@@ -82,7 +82,7 @@ private:
     class AboutDialog : public wxDialog {
     public:
         AboutDialog();
-        ~AboutDialog(){};
+        ~AboutDialog() {};
 
     private:
         const wxString ABOUT = "App to generate SVG tree images in top view.\n\n"
@@ -99,7 +99,7 @@ private:
     class NewDialog : public wxDialog {
     public:
         NewDialog(wxSize drawingAreaSize);
-        ~NewDialog(){};
+        ~NewDialog() {};
 
         wxSize GetSize();
 

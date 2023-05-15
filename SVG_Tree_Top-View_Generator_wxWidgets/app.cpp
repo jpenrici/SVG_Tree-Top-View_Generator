@@ -6,7 +6,7 @@ bool App::OnInit()
         return false;
     }
 
-    AppFrame *frame = new AppFrame("wxWidgtes App to Draw Trees", wxSize(960, 700));
+    AppFrame *frame = new AppFrame("wxWidgtes App to Draw Trees", wxSize(1024, 700));
     frame->Show();
 
     SetTopWindow(frame);
@@ -36,21 +36,22 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     menu[1]->Append(ID_Menu_Reset, "&Reset\tDelete", "Clear drawing area.");
 
     std::vector<std::vector<unsigned> > daSize = {{150, 150}, {300, 300}, {480, 480},
-                                                  {500, 500}, {600, 480}, {850, 500}};
+                                                  {500, 500}, {600, 480}, {800, 500}, {900, 500}};
     wxMenu *submenu2 = new wxMenu;
-    for(unsigned i = 0; i < daSize.size(); i++) {
+    for (unsigned i = 0; i < daSize.size(); i++) {
         submenu2->Append(ID_Array_Menu_Size + i, std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back()));
-        submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent &event){
-                drawingArea->Resize(wxSize(daSize[i].front(),daSize[i].back()));
+        submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
+                drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()));
                 info->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
                                    + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
             }, ID_Array_Menu_Size + i);
     }
     submenu2->Append(ID_Array_Menu_Size + daSize.size(), "Custom\tCtrl-N");
-    submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent &event){
+    submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
             if (!drawingArea->Resize(NewDialog(drawingArea->GetSize()).GetSize())) {
                 SetStatusText("Invalid size!");
-            }}, ID_Array_Menu_Size + daSize.size());
+            }
+        }, ID_Array_Menu_Size + daSize.size());
 
     menu[2] = new wxMenu;
     menu[2]->AppendSubMenu(submenu2, "New");
@@ -61,7 +62,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     menuBar = new wxMenuBar;
     menuBar->Append(menu[0], "&File");
     menuBar->Append(menu[1], "&Edit");
-    menuBar->Append(menu[2], "&Drawing Area");
+    menuBar->Append(menu[2], "&Image");
     menuBar->Append(menu[3], "&Help");
     SetMenuBar(menuBar);
 
@@ -82,9 +83,10 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     info = new wxStaticText(this, ID_Label_Info, "");
     info->SetFont(font1);
 
-    std::vector<wxString> labels = {"Angle", "Lenght", "Distance", "Tickness"};
+    std::vector<wxString> labels = {"Angle", "Lenght", "Distance", "Line Width"};
     std::vector<wxString> tips = {"Angle of the leaf on the branch", "Leaf lenght",
-                                  "Minimum distance between sheets", "Branch thickness"};
+        "Minimum distance between sheets", "Branch thickness"
+    };
     for (unsigned i = 0; i < 4; i++) {
         label[i] = new wxStaticText(this, ID_Label, labels[i]);
         label[i]->SetToolTip(tips[i]);
@@ -92,7 +94,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     }
 
     // DrawingArea - Panel
-    drawingArea = new DrawingArea(this, ID_DrawingArea, wxDefaultPosition, wxSize(850, 500));
+    drawingArea = new DrawingArea(this, ID_DrawingArea, wxDefaultPosition, wxSize(900, 500));
     drawingArea->SetBackgroundColour(*wxWHITE);
     drawingArea->SetShape(0); // Only lines
 
@@ -104,7 +106,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     for (unsigned i = 0; i < 4; ++i) {
         slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
-        slider[i]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent &event){
+        slider[i]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
             drawingArea->SetValue(i, slider[i]->GetValue());
             slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
         });
@@ -119,7 +121,8 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     checkBox[0]->Bind(wxEVT_CHECKBOX, [ = ](wxCommandEvent &) {
             checkBox[1]->SetValue(false);
             drawingArea->SetStyle(checkBox[0]->GetValue());
-            drawingArea->Refresh(); }, ID_ChkBox_Spline);
+            drawingArea->Refresh();
+        }, ID_ChkBox_Spline);
 
     checkBox[1] = new wxCheckBox(this, ID_ChkBox_Random, "Greens");
     checkBox[1]->SetToolTip("Randomize color.");
@@ -132,7 +135,8 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
             if (checkBox[1]->GetValue()) {
                 SetStatusText("Use the R key to randomize again.");
                 drawingArea->SetRandomColor(wxColour(0, 80, 0), wxColour(0, 200, 0));
-            } else {
+            }
+            else {
                 SetStatusText("");
                 drawingArea->SetRandomColor();
                 drawingArea->SetColor(1, colorPCtrl[1]->GetColour(), colorPCtrl[1]->GetColour());
@@ -150,14 +154,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         drawingArea->SetColor(i, colorPCtrl[i]->GetColour(), colorPCtrl[i]->GetColour());
     }
 
-    colorPCtrl[0]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
+    colorPCtrl[0]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent & event) {
         drawingArea->SetColor(0, colorPCtrl[0]->GetColour(), colorPCtrl[0]->GetColour());
     });
-    colorPCtrl[1]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
+    colorPCtrl[1]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent & event) {
         checkBox[1]->SetValue(false);
         drawingArea->SetColor(1, colorPCtrl[1]->GetColour(), colorPCtrl[1]->GetColour());
     });
-    colorPCtrl[2]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent &event){
+    colorPCtrl[2]->Bind(wxEVT_COLOURPICKER_CHANGED, [ = ](wxCommandEvent & event) {
         drawingArea->SetColor(2, colorPCtrl[2]->GetColour(), colorPCtrl[2]->GetColour());
     });
 
@@ -174,7 +178,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         bmpBtn[i] = new wxBitmapButton(this, ID_Array_BitmapButton + i, wxBitmap(img, wxBITMAP_TYPE_ANY));
         bmpBtn[i]->SetSize(bmpBtn[i]->GetBestSize());
         bmpBtn[i]->SetToolTip("Leaf " + std::to_string(i + 1));
-        bmpBtn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &event){
+        bmpBtn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent & event) {
             currentShape = event.GetId() % ID_Array_BitmapButton;
             drawingArea->SetShape(currentShape);
         });
@@ -221,7 +225,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     SetStatusText("Welcome! Keep the Mouse Left pressed to draw a branch of the tree.");
     SetBackgroundColour(wxColour(50, 50, 50, 255));
 
-    drawingArea->Bind(wxEVT_LEFT_DOWN, [ = ](wxMouseEvent &event){
+    drawingArea->Bind(wxEVT_LEFT_DOWN, [ = ](wxMouseEvent & event) {
         SetStatusText("");
         drawingArea->OnMouseClicked(event);
     });
@@ -264,13 +268,15 @@ void AppFrame::OnSave(wxCommandEvent &event)
         case ID_Menu_SaveTxt:
             result = drawingArea->OnSaveTxT(path);
             break;
-        default:;
+        default:
+            ;
             break;
         }
         if (result) {
             wxString filename = std::filesystem::path(std::string(path)).filename().string();
             SetStatusText("Save: " + filename);
-        } else {
+        }
+        else {
             SetStatusText("There was something wrong!");
         }
     }
@@ -338,7 +344,9 @@ AppFrame::AboutDialog::AboutDialog()
 
     // Button
     okBtn = new wxButton(this, wxID_ANY, "Ok", wxDefaultPosition, wxSize(70, 30));
-    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) { Close(true); });
+    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) {
+        Close(true);
+    });
     okBtn->SetFocus();
 
     // Dialog
@@ -380,13 +388,9 @@ AppFrame::NewDialog::NewDialog(wxSize drawingAreaSize)
 
     // Label
     wxFont font(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    label[0] = new wxStaticText(this, wxID_ANY, "Enter the new size.", wxDefaultPosition, wxDefaultSize,
-                                wxTE_MULTILINE | wxTE_RICH);
-    label[1] = new wxStaticText(this, wxID_ANY, "Width", wxDefaultPosition, wxDefaultSize,
-                                wxTE_MULTILINE | wxTE_RICH);
-    label[2] = new wxStaticText(this, wxID_ANY, "Heigth", wxDefaultPosition, wxDefaultSize,
-                                wxTE_MULTILINE | wxTE_RICH);
-
+    label[0] = new wxStaticText(this, wxID_ANY, "Enter the new size.", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_RICH);
+    label[1] = new wxStaticText(this, wxID_ANY, "Width", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_RICH);
+    label[2] = new wxStaticText(this, wxID_ANY, "Heigth", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_RICH);
     label[0]->SetFont(font);
     label[1]->SetFont(font);
     label[2]->SetFont(font);
@@ -400,7 +404,9 @@ AppFrame::NewDialog::NewDialog(wxSize drawingAreaSize)
 
     // Button
     okBtn = new wxButton(this, wxID_ANY, "Ok", wxDefaultPosition, wxSize(70, 30));
-    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) { Close(true); });
+    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) {
+        Close(true);
+    });
     okBtn->SetFocus();
 
     // Dialog
@@ -439,7 +445,8 @@ wxSize AppFrame::NewDialog::GetSize()
 
     try {
         return wxSize(wxAtoi(width->GetValue()), wxAtoi(height->GetValue()));
-    } catch (...) {
+    }
+    catch (...) {
         // pass
     }
 
