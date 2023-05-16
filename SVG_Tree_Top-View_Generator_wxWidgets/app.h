@@ -39,11 +39,11 @@ private:
 
     enum ID {
         ID_AboutDialog,
+        ID_ChkBox_Metadata,
         ID_ChkBox_Random,
         ID_ChkBox_Spline,
         ID_DrawingArea,
         ID_Label,
-        ID_Label_Info,
         ID_Menu_New,
         ID_Menu_Redo,
         ID_Menu_Reset,
@@ -56,8 +56,11 @@ private:
         // Arrays
         ID_Array_BitmapButton = 100,
         ID_Array_ColourPickerCtrl = 200,
-        ID_Array_Menu_Size = 300,
-        ID_Array_Slider = 400
+        ID_Array_Label_Info = 300,
+        ID_Array_Menu_Resize = 400,
+        ID_Array_Menu_Size = 500,
+        ID_Array_Slider = 600,
+        ID_Array_TextCtrl = 700
     };
 
     DrawingArea    *drawingArea;
@@ -66,14 +69,15 @@ private:
     wxBitmapButton     *bmpBtn[10];
     wxBoxSizer         *hBox[4];
     wxBoxSizer         *vBox[2];
-    wxCheckBox         *checkBox[2];
+    wxCheckBox         *checkBox[3];
     wxColourPickerCtrl *colorPCtrl[3];
     wxMenu             *menu[4];
     wxMenuBar          *menuBar;
     wxSlider           *slider[4];
-    wxStaticText       *info;
+    wxStaticText       *info[4];
     wxStaticText       *label[4];
     wxStatusBar        *statusBar;
+    wxTextCtrl         *txtCtrl[3];
 
     void OnKeyDown(wxKeyEvent &event);
     void OnSave(wxCommandEvent &event);

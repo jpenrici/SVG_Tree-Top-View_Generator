@@ -14,7 +14,7 @@ public:
     bool OnSaveSvg(wxString path);
     bool OnSaveSvgDC(wxString path);
     bool OnSaveTxT(wxString path);
-    bool Resize(wxSize size);
+    bool Resize(wxSize size, bool reset = true);
 
     unsigned GetValue(unsigned number);
 

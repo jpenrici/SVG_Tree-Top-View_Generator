@@ -38,13 +38,21 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     std::vector<std::vector<unsigned> > daSize = {{150, 150}, {300, 300}, {480, 480},
                                                   {500, 500}, {600, 480}, {800, 500}, {900, 500}};
     wxMenu *submenu2 = new wxMenu;
+    wxMenu *submenu3 = new wxMenu;
     for (unsigned i = 0; i < daSize.size(); i++) {
-        submenu2->Append(ID_Array_Menu_Size + i, std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back()));
+        wxString s = std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back());
+        submenu2->Append(ID_Array_Menu_Size + i, s);
         submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
                 drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()));
-                info->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
+                info[0]->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
                                    + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
             }, ID_Array_Menu_Size + i);
+        submenu3->Append(ID_Array_Menu_Resize + i, s);
+        submenu3->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
+                drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()), false);
+                info[0]->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
+                                      + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
+            }, ID_Array_Menu_Resize + i);
     }
     submenu2->Append(ID_Array_Menu_Size + daSize.size(), "Custom\tCtrl-N");
     submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
@@ -55,6 +63,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     menu[2] = new wxMenu;
     menu[2]->AppendSubMenu(submenu2, "New");
+    menu[2]->AppendSubMenu(submenu3, "Resize");
 
     menu[3] = new wxMenu;
     menu[3]->Append(wxID_ABOUT, "&About\tF1", "Show about dialog.");
@@ -80,13 +89,28 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     wxFont font1(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
     // Text
-    info = new wxStaticText(this, ID_Label_Info, "");
-    info->SetFont(font1);
+    std::vector<wxString> labels = {"", "Creator", "Title", "Publisher"};
+    std::vector<wxString> tips = {"Drawing", "Caqui", "Caqui", "Caqui"};
+    for (unsigned i = 0; i < 4; i++) {
+        info[i] = new wxStaticText(this, ID_Array_Label_Info + i, labels[i]);
+        info[i]->SetToolTip(tips[i]);
+        info[i]->SetFont(font);
+        if (i > 0) {
+            info[i]->Show(false);
+        }
+    }
 
-    std::vector<wxString> labels = {"Angle", "Lenght", "Distance", "Line Width"};
-    std::vector<wxString> tips = {"Angle of the leaf on the branch", "Leaf lenght",
-        "Minimum distance between sheets", "Branch thickness"
-    };
+    for (unsigned i = 0; i < 3; i++) {
+        txtCtrl[i] = new wxTextCtrl(this,  ID_Array_TextCtrl + i, wxEmptyString,
+                                    wxDefaultPosition, wxSize(100, 24), wxTE_RICH,
+                                    wxDefaultValidator, wxTextCtrlNameStr);
+        txtCtrl[i]->SetFont(font);
+        txtCtrl[i]->Show(false);
+    }
+
+    labels = {"Angle", "Lenght", "Distance", "Line Width"};
+    tips = {"Angle of the leaf on the branch", "Leaf lenght", "Minimum distance between sheets",
+            "Branch thickness"};
     for (unsigned i = 0; i < 4; i++) {
         label[i] = new wxStaticText(this, ID_Label, labels[i]);
         label[i]->SetToolTip(tips[i]);
@@ -143,6 +167,18 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
             }
         }, ID_ChkBox_Random);
 
+    checkBox[2] = new wxCheckBox(this, ID_ChkBox_Metadata, "");
+    checkBox[2]->SetToolTip("Metadata.");
+    checkBox[2]->SetValue(false);
+    checkBox[2]->Bind(wxEVT_CHECKBOX, [ = ](wxCommandEvent &) {
+        info[1]->Show(checkBox[2]->GetValue());
+        info[2]->Show(checkBox[2]->GetValue());
+        info[3]->Show(checkBox[2]->GetValue());
+        txtCtrl[0]->Show(checkBox[2]->GetValue());
+        txtCtrl[1]->Show(checkBox[2]->GetValue());
+        txtCtrl[2]->Show(checkBox[2]->GetValue());
+    });
+
     // ColourPickerCtrl
     colorPCtrl[0] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 0, wxColor(0, 102, 0, 255));
     colorPCtrl[1] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 1, wxColor(50, 200, 50, 255));
@@ -187,7 +223,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     vBox[1]->Add(checkBox[0], 0, wxTOP | wxBOTTOM, 5); // Spline
     vBox[1]->Add(checkBox[1], 0, wxTOP | wxBOTTOM, 5); // Random Color
 
-    hBox[0]->Add(info, 1, wxEXPAND);            // Info
+    hBox[0]->Add(info[0], 1, wxEXPAND);         // Area
+    hBox[0]->Add(info[1]);                      // Creator
+    hBox[0]->Add(txtCtrl[0], 0, wxLEFT, 2);
+    hBox[0]->Add(info[2]);                      // Title
+    hBox[0]->Add(txtCtrl[1], 0, wxLEFT, 2);
+    hBox[0]->Add(info[3]);                      // Publisher
+    hBox[0]->Add(txtCtrl[2], 0, wxLEFT, 2);
+    hBox[0]->Add(checkBox[2], 0, wxLEFT, 15);
     hBox[1]->Add(vBox[1]);                      // Buttons
     hBox[1]->Add(drawingArea, 0, wxLEFT, 10);
 

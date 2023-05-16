@@ -168,13 +168,16 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
     Refresh();
 }
 
-bool DrawingArea::Resize(wxSize newSize)
+bool DrawingArea::Resize(wxSize newSize, bool reset)
 {
     if (newSize.x < 100 || newSize.y < 100 || newSize.x > maxSize.x || newSize.y > maxSize.y) {
         return false;
     }
 
-    OnReset();
+    if (reset) {
+        OnReset();
+    }
+
     SetSize(newSize);
     currentSize = newSize;
 
