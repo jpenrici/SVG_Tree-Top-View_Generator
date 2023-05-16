@@ -1,5 +1,4 @@
 #include "drawingArea.h"    // wxPanel
-#include "svg.h"            // custom generator
 
 #include "wx/dcsvg.h"
 
@@ -305,7 +304,7 @@ bool DrawingArea::OnSaveSvgDC(wxString path)
     return svgDC.IsOk();
 }
 
-bool DrawingArea::OnSaveSvg(wxString path)
+bool DrawingArea::OnSaveSvg(wxString path, SVG::Metadata metadata)
 {
     int count = 0;
     std::string image = "";
@@ -327,7 +326,7 @@ bool DrawingArea::OnSaveSvg(wxString path)
         }
     }
 
-    std::string svg = SVG::svg(currentSize.x, currentSize.y, image, SVG::Metadata());
+    std::string svg = SVG::svg(currentSize.x, currentSize.y, image, metadata);
     wxMessageOutputDebug().Printf("%s", svg);
 
     return SVG::save(svg, std::string(path));

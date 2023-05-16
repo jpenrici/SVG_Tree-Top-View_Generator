@@ -6,12 +6,14 @@
 #include <wx/wx.h>
 #endif
 
+#include "svg.h"    // custom generator
+
 class DrawingArea : public wxPanel {
 public:
     DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size);
 
     bool IsEmpty();
-    bool OnSaveSvg(wxString path);
+    bool OnSaveSvg(wxString path, SVG::Metadata metadata);
     bool OnSaveSvgDC(wxString path);
     bool OnSaveTxT(wxString path);
     bool Resize(wxSize size, bool reset = true);

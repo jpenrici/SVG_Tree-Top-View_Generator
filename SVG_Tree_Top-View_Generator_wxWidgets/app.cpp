@@ -44,14 +44,10 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         submenu2->Append(ID_Array_Menu_Size + i, s);
         submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
                 drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()));
-                info[0]->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
-                                   + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
             }, ID_Array_Menu_Size + i);
         submenu3->Append(ID_Array_Menu_Resize + i, s);
         submenu3->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
                 drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()), false);
-                info[0]->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
-                                      + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
             }, ID_Array_Menu_Resize + i);
     }
     submenu2->Append(ID_Array_Menu_Size + daSize.size(), "Custom\tCtrl-N");
@@ -89,8 +85,9 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     wxFont font1(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
     // Text
-    std::vector<wxString> labels = {"", "Creator", "Title", "Publisher"};
-    std::vector<wxString> tips = {"Drawing", "Caqui", "Caqui", "Caqui"};
+    std::vector<wxString> labels = {"Welcome!", "Creator", "Title", "Publisher"};
+    std::vector<wxString> tips = {"Drawing", "SVG creator name.", "Drawing title.",
+                                  "Publisher or website."};
     for (unsigned i = 0; i < 4; i++) {
         info[i] = new wxStaticText(this, ID_Array_Label_Info + i, labels[i]);
         info[i]->SetToolTip(tips[i]);
@@ -104,6 +101,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         txtCtrl[i] = new wxTextCtrl(this,  ID_Array_TextCtrl + i, wxEmptyString,
                                     wxDefaultPosition, wxSize(100, 24), wxTE_RICH,
                                     wxDefaultValidator, wxTextCtrlNameStr);
+        txtCtrl[i]->SetLabelText("");
         txtCtrl[i]->SetFont(font);
         txtCtrl[i]->Show(false);
     }
@@ -225,11 +223,11 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     hBox[0]->Add(info[0], 1, wxEXPAND);         // Area
     hBox[0]->Add(info[1]);                      // Creator
-    hBox[0]->Add(txtCtrl[0], 0, wxLEFT, 2);
+    hBox[0]->Add(txtCtrl[0], 0, wxLEFT, 5);
     hBox[0]->Add(info[2]);                      // Title
-    hBox[0]->Add(txtCtrl[1], 0, wxLEFT, 2);
+    hBox[0]->Add(txtCtrl[1], 0, wxLEFT, 5);
     hBox[0]->Add(info[3]);                      // Publisher
-    hBox[0]->Add(txtCtrl[2], 0, wxLEFT, 2);
+    hBox[0]->Add(txtCtrl[2], 0, wxLEFT, 5);
     hBox[0]->Add(checkBox[2], 0, wxLEFT, 15);
     hBox[1]->Add(vBox[1]);                      // Buttons
     hBox[1]->Add(drawingArea, 0, wxLEFT, 10);
@@ -265,12 +263,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     SetMinSize(size);
     SetMaxSize(size);
     SetStatusBar(statusBar);
-    SetStatusText("Welcome! Keep the Mouse Left pressed to draw a branch of the tree.");
+    SetStatusText("Keep the Mouse Left pressed to draw a branch of the tree.");
     SetBackgroundColour(wxColour(50, 50, 50, 255));
 
     drawingArea->Bind(wxEVT_LEFT_DOWN, [ = ](wxMouseEvent & event) {
-        SetStatusText("");
         drawingArea->OnMouseClicked(event);
+        SetStatusText("");
+        info[0]->SetLabelText("Area: " + std::to_string(drawingArea->GetSize().GetWidth())
+                              + " x " + std::to_string(drawingArea->GetSize().GetHeight()));
     });
 
     Bind(wxEVT_CHAR_HOOK, &AppFrame::OnKeyDown, this);
@@ -306,7 +306,10 @@ void AppFrame::OnSave(wxCommandEvent &event)
             result = drawingArea->OnSaveSvgDC(path);
             break;
         case ID_Menu_SaveHsvg:
-            result = drawingArea->OnSaveSvg(path);
+            result = drawingArea->OnSaveSvg(path, SVG::Metadata(
+                                                      std::string(txtCtrl[0]->GetValue()),
+                                                      std::string(txtCtrl[1]->GetValue()),
+                                                      std::string(txtCtrl[2]->GetValue())));
             break;
         case ID_Menu_SaveTxt:
             result = drawingArea->OnSaveTxT(path);

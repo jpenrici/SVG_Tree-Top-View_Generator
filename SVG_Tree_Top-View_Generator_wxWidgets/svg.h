@@ -53,8 +53,8 @@ public:
         std::string date = "";
 
         Metadata(){};
-        Metadata(std::string creator, std::string title, std::string date, std::string publisher)
-            : creator(creator), title(title), date(date), publisherAgentTitle(publisher) {}
+        Metadata(std::string creator, std::string title, std::string publisher)
+            : creator(creator), title(title), publisherAgentTitle(publisher) {}
     };
 
     struct Point {
@@ -159,7 +159,7 @@ public:
             "        </dc:creator>\n"
             "        <cc:license\n"
             "           rdf:resource=\"http://creativecommons.org/publicdomain/zero/1.0/\" />\n"
-            "        <dc:description>SVG tree image in top view created automatically by algorithm in C++.</dc:description>\n"
+            "        <dc:description>SVG tree image in top view created automatically by algorithm in C++. Developer: https://github.com/jpenrici</dc:description>\n"
             "      </cc:Work>\n"
             "      <cc:License\n"
             "         rdf:about=\"http://creativecommons.org/publicdomain/zero/1.0/\">\n"
