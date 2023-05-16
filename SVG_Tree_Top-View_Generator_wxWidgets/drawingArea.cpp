@@ -70,10 +70,15 @@ void DrawingArea::OnDraw(wxDC &dc)
         dc.SetPen(colorCursorPen);
         dc.SetBrush(colorCursorBrush);
         dc.DrawCircle(cursorPosition.x, cursorPosition.y, cursorRadius);
+    }
+    if (isDrawing || path.empty()) {
         // Border
         dc.SetPen(colorBorderPen);
         dc.SetBrush(colorBorderBrush);
         dc.DrawRectangle(panelBorder, panelBorder, GetSize().x - 2 * panelBorder, GetSize().y - 2 * panelBorder);
+        // Center
+        dc.DrawRectangle(GetSize().x / 2, 0, GetSize().x, GetSize().y);
+        dc.DrawRectangle(0, GetSize().y / 2, GetSize().x, GetSize().y);
     }
 
     for (auto &shape : shapes) {
@@ -137,7 +142,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
 {
     cursorPosition = ScreenToClient(::wxGetMousePosition());
     if (cursorPosition.x > panelBorder && cursorPosition.x < GetSize().x - panelBorder &&
-            cursorPosition.y > panelBorder && cursorPosition.y < GetSize().y - panelBorder) {
+        cursorPosition.y > panelBorder && cursorPosition.y < GetSize().y - panelBorder) {
         if (event.LeftDown()) {
             // Close line
             if (!path.empty()) {
@@ -358,98 +363,98 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
     std::vector<wxPoint> points;
     if (shape == 1) {
         points = {pos,
-                  pos + angularCoordinate(lenght / 2, angle + 15),
-                  pos + angularCoordinate(lenght, angle),
-                  pos + angularCoordinate(lenght / 2, angle - 15),
-                  pos
-                 };
+            pos + angularCoordinate(lenght / 2, angle + 15),
+            pos + angularCoordinate(lenght, angle),
+            pos + angularCoordinate(lenght / 2, angle - 15),
+            pos
+        };
     }
     else if (shape == 2) {
         points = {pos,
-                  pos + angularCoordinate(lenght * 2 / 5, angle + 45),
-                  pos + angularCoordinate(lenght, angle),
-                  pos + angularCoordinate(lenght * 2 / 5, angle - 45),
-                  pos
-                 };
+            pos + angularCoordinate(lenght * 2 / 5, angle + 45),
+            pos + angularCoordinate(lenght, angle),
+            pos + angularCoordinate(lenght * 2 / 5, angle - 45),
+            pos
+        };
     }
     else if (shape == 3) {
         points = {pos,
-                  pos + angularCoordinate(lenght * 2 / 6, angle + 60),
-                  pos + angularCoordinate(lenght * 4 / 6, angle + 20),
-                  pos + angularCoordinate(lenght, angle),
-                  pos + angularCoordinate(lenght * 4 / 6, angle - 20),
-                  pos + angularCoordinate(lenght * 2 / 6, angle - 60),
-                  pos
-                 };
+            pos + angularCoordinate(lenght * 2 / 6, angle + 60),
+            pos + angularCoordinate(lenght * 4 / 6, angle + 20),
+            pos + angularCoordinate(lenght, angle),
+            pos + angularCoordinate(lenght * 4 / 6, angle - 20),
+            pos + angularCoordinate(lenght * 2 / 6, angle - 60),
+            pos
+        };
     }
     else if (shape == 4) {
         points = {pos,
-                  pos + angularCoordinate(lenght, angle + 15),
-                  pos + angularCoordinate(lenght * 3 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 15),
-                  pos
-                 };
+            pos + angularCoordinate(lenght, angle + 15),
+            pos + angularCoordinate(lenght * 3 / 5, angle),
+            pos + angularCoordinate(lenght, angle - 15),
+            pos
+        };
     }
     else if (shape == 5) {
         points = {pos,
-                  pos + angularCoordinate(lenght, angle + 20),
-                  pos + angularCoordinate(lenght * 1 / 5, angle),
-                  pos + angularCoordinate(lenght, angle + 15),
-                  pos + angularCoordinate(lenght * 2 / 5, angle),
-                  pos + angularCoordinate(lenght, angle + 5),
-                  pos + angularCoordinate(lenght * 3 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 5),
-                  pos + angularCoordinate(lenght * 2 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 15),
-                  pos + angularCoordinate(lenght * 1 / 5, angle),
-                  pos + angularCoordinate(lenght, angle - 20),
-                  pos
-                 };
+            pos + angularCoordinate(lenght, angle + 20),
+            pos + angularCoordinate(lenght * 1 / 5, angle),
+            pos + angularCoordinate(lenght, angle + 15),
+            pos + angularCoordinate(lenght * 2 / 5, angle),
+            pos + angularCoordinate(lenght, angle + 5),
+            pos + angularCoordinate(lenght * 3 / 5, angle),
+            pos + angularCoordinate(lenght, angle - 5),
+            pos + angularCoordinate(lenght * 2 / 5, angle),
+            pos + angularCoordinate(lenght, angle - 15),
+            pos + angularCoordinate(lenght * 1 / 5, angle),
+            pos + angularCoordinate(lenght, angle - 20),
+            pos
+        };
     }
     else if (shape == 6) {
         points = {pos,
-                  pos + angularCoordinate(lenght, angle + 45),
-                  pos + angularCoordinate(lenght * 2 / 6, angle),
-                  pos + angularCoordinate(lenght, angle + 30),
-                  pos + angularCoordinate(lenght * 3 / 6, angle),
-                  pos + angularCoordinate(lenght, angle + 10),
-                  pos + angularCoordinate(lenght * 4 / 6, angle),
-                  pos + angularCoordinate(lenght, angle - 10),
-                  pos + angularCoordinate(lenght * 3 / 6, angle),
-                  pos + angularCoordinate(lenght, angle - 30),
-                  pos + angularCoordinate(lenght * 2 / 6, angle),
-                  pos + angularCoordinate(lenght, angle - 45),
-                  pos
-                 };
+            pos + angularCoordinate(lenght, angle + 45),
+            pos + angularCoordinate(lenght * 2 / 6, angle),
+            pos + angularCoordinate(lenght, angle + 30),
+            pos + angularCoordinate(lenght * 3 / 6, angle),
+            pos + angularCoordinate(lenght, angle + 10),
+            pos + angularCoordinate(lenght * 4 / 6, angle),
+            pos + angularCoordinate(lenght, angle - 10),
+            pos + angularCoordinate(lenght * 3 / 6, angle),
+            pos + angularCoordinate(lenght, angle - 30),
+            pos + angularCoordinate(lenght * 2 / 6, angle),
+            pos + angularCoordinate(lenght, angle - 45),
+            pos
+        };
     }
     else if (shape == 7) {
         points = {pos,
-                  pos + angularCoordinate(lenght / 2, angle + 70),
-                  pos + angularCoordinate(lenght / 2, angle + 50),
-                  pos + angularCoordinate(lenght / 2, angle + 10),
-                  pos + angularCoordinate(lenght / 2, angle - 10),
-                  pos + angularCoordinate(lenght / 2, angle - 50),
-                  pos + angularCoordinate(lenght / 2, angle - 70),
-                  pos
-                 };
+            pos + angularCoordinate(lenght / 2, angle + 70),
+            pos + angularCoordinate(lenght / 2, angle + 50),
+            pos + angularCoordinate(lenght / 2, angle + 10),
+            pos + angularCoordinate(lenght / 2, angle - 10),
+            pos + angularCoordinate(lenght / 2, angle - 50),
+            pos + angularCoordinate(lenght / 2, angle - 70),
+            pos
+        };
     }
     else if (shape == 8) {
         points = {pos,
-                  pos + angularCoordinate(lenght, angle + 20),
-                  pos + angularCoordinate(lenght, angle + 5),
-                  pos + angularCoordinate(lenght, angle - 20),
-                  pos
-                 };
+            pos + angularCoordinate(lenght, angle + 20),
+            pos + angularCoordinate(lenght, angle + 5),
+            pos + angularCoordinate(lenght, angle - 20),
+            pos
+        };
     }
     else if (shape == 9) {
         points = {pos,
-                  pos + angularCoordinate(lenght, angle + 60),
-                  pos + angularCoordinate(lenght * 2 / 5, angle - 45),
-                  pos,
-                  pos + angularCoordinate(lenght * 2 / 5, angle + 45),
-                  pos + angularCoordinate(lenght, angle - 60),
-                  pos
-                 };
+            pos + angularCoordinate(lenght, angle + 60),
+            pos + angularCoordinate(lenght * 2 / 5, angle - 45),
+            pos,
+            pos + angularCoordinate(lenght * 2 / 5, angle + 45),
+            pos + angularCoordinate(lenght, angle - 60),
+            pos
+        };
     }
     else {
         // Simple line

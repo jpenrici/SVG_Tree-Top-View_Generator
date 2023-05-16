@@ -38,17 +38,12 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     std::vector<std::vector<unsigned> > daSize = {{150, 150}, {300, 300}, {480, 480},
                                                   {500, 500}, {600, 480}, {800, 500}, {900, 500}};
     wxMenu *submenu2 = new wxMenu;
-    wxMenu *submenu3 = new wxMenu;
     for (unsigned i = 0; i < daSize.size(); i++) {
         wxString s = std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back());
         submenu2->Append(ID_Array_Menu_Size + i, s);
         submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
                 drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()));
             }, ID_Array_Menu_Size + i);
-        submenu3->Append(ID_Array_Menu_Resize + i, s);
-        submenu3->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
-                drawingArea->Resize(wxSize(daSize[i].front(), daSize[i].back()), false);
-            }, ID_Array_Menu_Resize + i);
     }
     submenu2->Append(ID_Array_Menu_Size + daSize.size(), "Custom\tCtrl-N");
     submenu2->Bind(wxEVT_MENU, [ = ](wxCommandEvent & event) {
@@ -59,7 +54,6 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     menu[2] = new wxMenu;
     menu[2]->AppendSubMenu(submenu2, "New");
-    menu[2]->AppendSubMenu(submenu3, "Resize");
 
     menu[3] = new wxMenu;
     menu[3]->Append(wxID_ABOUT, "&About\tF1", "Show about dialog.");

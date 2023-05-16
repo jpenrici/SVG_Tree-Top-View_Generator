@@ -57,10 +57,9 @@ private:
         ID_Array_BitmapButton = 100,
         ID_Array_ColourPickerCtrl = 200,
         ID_Array_Label_Info = 300,
-        ID_Array_Menu_Resize = 400,
-        ID_Array_Menu_Size = 500,
-        ID_Array_Slider = 600,
-        ID_Array_TextCtrl = 700
+        ID_Array_Menu_Size = 400,
+        ID_Array_Slider = 500,
+        ID_Array_TextCtrl = 600
     };
 
     DrawingArea    *drawingArea;
