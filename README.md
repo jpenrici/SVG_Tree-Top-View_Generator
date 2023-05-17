@@ -13,6 +13,6 @@ The <b>wxWidgets</b> library installed and configured as recommended in https://
 
 ## Display
 
-![display](https://github.com/jpenrici/SVG_Tree-Top-View_Generator/blob/main/display/display.png)
+![display](https://github.com/jpenrici/SVG_Tree-Top-View_Generator/blob/main/display/display.gif)
 
 
