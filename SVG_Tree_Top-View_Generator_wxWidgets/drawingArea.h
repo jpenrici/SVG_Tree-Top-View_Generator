@@ -26,7 +26,7 @@ public:
     void OnUndo();
     void SetColor(unsigned number, wxColour colorPen, wxColour colorBrush);
     void SetRandomColor(wxColour color1 = wxColour(0, 0, 0, 255), wxColour color2 = wxColour(0, 0, 0, 255));
-    void SetShape(unsigned number);
+    void SetShape(unsigned number, bool all = false);
     void SetStyle(bool isSpline = false);
     void SetValue(unsigned number, unsigned value);
 

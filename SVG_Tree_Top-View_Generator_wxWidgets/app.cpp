@@ -100,7 +100,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         txtCtrl[i]->Show(false);
     }
 
-    labels = {"Angle", "Lenght", "Distance", "Line Width"};
+    labels = {"Angle", "Lenght", "Distance", "Width"};
     tips = {"Angle of the leaf on the branch", "Leaf lenght", "Minimum distance between sheets",
             "Branch thickness"};
     for (unsigned i = 0; i < 4; i++) {
@@ -201,50 +201,60 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[2] = new wxBoxSizer(wxHORIZONTAL);
     hBox[3] = new wxBoxSizer(wxHORIZONTAL);
 
-    for (unsigned i = 0; i < 10; ++i) {
+    bmpBtn[0] = new wxBitmapButton(this, ID_Array_BitmapButton,
+                                   wxBitmap(wxBitmap("Resources/icon_line0.png", wxBITMAP_TYPE_ANY)).ConvertToImage().Rescale(16, 16));
+    bmpBtn[0]->SetToolTip("Redraws all branches.");
+    bmpBtn[0]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent & event) {
+        drawingArea->SetShape(currentShape, true);
+    });
+    for (unsigned i = 1; i < 11; ++i) {
         wxString img = "Resources/icon_line" + std::to_string(i) + ".png";
         bmpBtn[i] = new wxBitmapButton(this, ID_Array_BitmapButton + i, wxBitmap(img, wxBITMAP_TYPE_ANY));
         bmpBtn[i]->SetSize(bmpBtn[i]->GetBestSize());
-        bmpBtn[i]->SetToolTip("Leaf " + std::to_string(i + 1));
+        bmpBtn[i]->SetToolTip("Leaf " + std::to_string(i));
         bmpBtn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent & event) {
             currentShape = event.GetId() % ID_Array_BitmapButton;
             drawingArea->SetShape(currentShape);
+            wxImage icon = wxBitmap(img, wxBITMAP_TYPE_ANY).ConvertToImage().Rescale(16, 16);
+            bmpBtn[0]->SetBitmap(wxBitmap(icon));
         });
         vBox[1]->Add(bmpBtn[i], 0, wxLEFT, 5);
     }
+
     vBox[1]->Add(checkBox[0], 0, wxTOP | wxBOTTOM, 2); // Spline
     vBox[1]->Add(checkBox[1], 0, wxTOP | wxBOTTOM, 2); // Random Color
 
-    hBox[0]->Add(info[0], 1, wxEXPAND);         // Area
-    hBox[0]->Add(info[1]);                      // Creator
+    hBox[0]->Add(info[0], 1, wxEXPAND);             // Area
+    hBox[0]->Add(info[1]);                          // Creator
     hBox[0]->Add(txtCtrl[0], 0, wxLEFT, 5);
-    hBox[0]->Add(info[2]);                      // Title
+    hBox[0]->Add(info[2]);                          // Title
     hBox[0]->Add(txtCtrl[1], 0, wxLEFT, 5);
-    hBox[0]->Add(info[3]);                      // Publisher
+    hBox[0]->Add(info[3]);                          // Publisher
     hBox[0]->Add(txtCtrl[2], 0, wxLEFT, 5);
     hBox[0]->Add(checkBox[2], 0, wxLEFT, 15);
-    hBox[1]->Add(vBox[1]);                      // Buttons
+    hBox[1]->Add(vBox[1]);                          // Buttons
     hBox[1]->Add(drawingArea, 0, wxLEFT, 10);
 
-    hBox[2]->Add(colorPCtrl[0], 0);             // Leaf border color
-    hBox[2]->Add(colorPCtrl[1], 0);             // Leaf color
+    hBox[2]->Add(bmpBtn[0], 0, wxRIGHT, 2);         // Current shape
+    hBox[2]->Add(colorPCtrl[0], 0);                 // Leaf border color
+    hBox[2]->Add(colorPCtrl[1], 0);                 // Leaf color
 
-    hBox[3]->Add(hBox[2], 0, wxRIGHT, 5);
-    hBox[3]->Add(label[0]);                     // Shape Angle
-    hBox[3]->Add(slider[0], 0, wxRIGHT, 5);
-    hBox[3]->Add(label[1]);                     // Shape Lenght
-    hBox[3]->Add(slider[1], 0, wxRIGHT, 5);
-    hBox[3]->Add(label[2]);                     // Distance - Limit Lenght
-    hBox[3]->Add(slider[2], 0, wxRIGHT, 5);
-    hBox[3]->Add(colorPCtrl[2], 0, wxRIGHT, 5); // Branch color
-    hBox[3]->Add(label[3]);                     // Line Tickness - Branch
-    hBox[3]->Add(slider[3], 0, wxRIGHT, 5);
+    hBox[3]->Add(hBox[2], 0, wxRIGHT, 10);
+    hBox[3]->Add(label[0], 0, wxRIGHT, 2);          // Shape Angle
+    hBox[3]->Add(slider[0], 0, wxRIGHT, 2);
+    hBox[3]->Add(label[1], 0, wxRIGHT, 2);          // Shape Lenght
+    hBox[3]->Add(slider[1], 0, wxRIGHT, 2);
+    hBox[3]->Add(label[2], 0, wxRIGHT, 2);          // Distance - Limit Lenght
+    hBox[3]->Add(slider[2], 0, wxRIGHT, 2);
+    hBox[3]->Add(colorPCtrl[2], 0, wxRIGHT, 10);    // Branch color
+    hBox[3]->Add(label[3], 0, wxRIGHT, 2);          // Line Tickness - Branch
+    hBox[3]->Add(slider[3], 0, wxRIGHT, 2);
 
     vBox[0]->AddSpacer(10);
-    vBox[0]->Add(hBox[0], 1, wxEXPAND); // Info
-    vBox[0]->Add(hBox[1], 1, wxEXPAND); // Buttons and DrawingArea
+    vBox[0]->Add(hBox[0], 1, wxEXPAND);             // Info
+    vBox[0]->Add(hBox[1], 1, wxEXPAND);             // Buttons and DrawingArea
     vBox[0]->AddSpacer(10);
-    vBox[0]->Add(hBox[3]);              // Buttons and Sliders
+    vBox[0]->Add(hBox[3]);                          // Buttons and Sliders
     vBox[0]->AddSpacer(10);
 
     // Status Bar
@@ -309,7 +319,6 @@ void AppFrame::OnSave(wxCommandEvent &event)
             result = drawingArea->OnSaveTxT(path);
             break;
         default:
-            ;
             break;
         }
         if (result) {

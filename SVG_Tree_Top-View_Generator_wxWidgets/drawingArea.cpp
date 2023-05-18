@@ -152,6 +152,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
             }
             // Open new line
             isDrawing = true;
+
             path.push_back(Path(cursorPosition, shape));
         }
         if (isDrawing && event.LeftIsDown()) {
@@ -239,9 +240,14 @@ void DrawingArea::SetColor(unsigned int number, wxColour colorPen, wxColour colo
     Refresh();
 }
 
-void DrawingArea::SetShape(unsigned number)
+void DrawingArea::SetShape(unsigned number, bool all)
 {
     shape = number;
+    if (all) {
+        for (unsigned i = 0; i < path.size(); i++) {
+            path[i].shape = number;
+        }
+    }
     OnUpdate();
     Refresh();
 }

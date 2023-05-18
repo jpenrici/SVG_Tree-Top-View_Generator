@@ -65,7 +65,7 @@ private:
     DrawingArea    *drawingArea;
     unsigned       currentShape;
 
-    wxBitmapButton     *bmpBtn[10];
+    wxBitmapButton     *bmpBtn[11];
     wxBoxSizer         *hBox[4];
     wxBoxSizer         *vBox[2];
     wxCheckBox         *checkBox[3];
