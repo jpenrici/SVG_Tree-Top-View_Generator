@@ -198,7 +198,7 @@ public:
         return {
             "     <polyline\n"
             "        id=\"" + shape.name + "\"\n"
-            "        style=\"opacity:1.0;fill:none;stroke:" + shape.stroke + ";stroke-width:" + strokeWidth + ";stroke-opacity:1\"\n"
+            "        style=\"opacity:1.0;fill:none;stroke:" + shape.stroke + ";stroke-width:" + strokeWidth + ";stroke-opacity:1;stroke-linejoin:round;stroke-linecap:round\"\n"
             "        points=\"" + values + "\" />\n"
         };
     }
@@ -221,7 +221,7 @@ public:
         return {
             "     <path\n"
             "        id=\"" + shape.name + "\"\n"
-            "        style=\"opacity:1.0;fill:" + shape.fill + ";stroke:" + shape.stroke + ";stroke-width:" + strokeWidth + ";stroke-opacity:1\"\n"
+            "        style=\"opacity:1.0;fill:" + shape.fill + ";stroke:" + shape.stroke + ";stroke-width:" + strokeWidth + ";stroke-opacity:1;stroke-linejoin:round;stroke-linecap:round\"\n"
             "        d=\"M " + values + " Z\" />\n"
         };
     }

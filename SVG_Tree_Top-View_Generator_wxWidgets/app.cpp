@@ -212,8 +212,8 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         });
         vBox[1]->Add(bmpBtn[i], 0, wxLEFT, 5);
     }
-    vBox[1]->Add(checkBox[0], 0, wxTOP | wxBOTTOM, 5); // Spline
-    vBox[1]->Add(checkBox[1], 0, wxTOP | wxBOTTOM, 5); // Random Color
+    vBox[1]->Add(checkBox[0], 0, wxTOP | wxBOTTOM, 2); // Spline
+    vBox[1]->Add(checkBox[1], 0, wxTOP | wxBOTTOM, 2); // Random Color
 
     hBox[0]->Add(info[0], 1, wxEXPAND);         // Area
     hBox[0]->Add(info[1]);                      // Creator
@@ -245,7 +245,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     vBox[0]->Add(hBox[1], 1, wxEXPAND); // Buttons and DrawingArea
     vBox[0]->AddSpacer(10);
     vBox[0]->Add(hBox[3]);              // Buttons and Sliders
-    vBox[0]->AddSpacer(5);
+    vBox[0]->AddSpacer(10);
 
     // Status Bar
     statusBar = new wxStatusBar(this, ID_StatuBar);

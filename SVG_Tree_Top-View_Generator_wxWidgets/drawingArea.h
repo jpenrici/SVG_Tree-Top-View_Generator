@@ -50,22 +50,25 @@ private:
 
     // Draw
     struct Shape {
-        wxString name;
-        wxColour pen, brush;
-        unsigned lineWidth;
+        wxString name = "";
+        wxColour pen = wxColour(0, 0, 0, 255);
+        wxColour brush = wxColour(255, 255, 255, 255);
+        unsigned lineWidth = 1;
         std::vector<wxPoint> points;
 
+        Shape(){}
         Shape(wxString name, wxColour pen, wxColour brush, unsigned lineWidth,
               std::vector<wxPoint> points)
-            : name(name), pen(pen), brush(brush), lineWidth(lineWidth),
-            points(points) {}
+            : name(name), pen(pen), brush(brush), lineWidth(lineWidth), points(points) {}
     };
 
     struct Path {
+        unsigned shape;
         wxPoint begin, end;
         std::vector<wxPoint> points;
 
-        Path(wxPoint point) : begin(point), end(point), points({point}) {}
+        Path(wxPoint point) : begin(point), end(point), points({}), shape(0) {}
+        Path(wxPoint point, unsigned shape) : begin(point), end(point), shape(shape) {}
     };
 
     std::vector<Path> bkp;

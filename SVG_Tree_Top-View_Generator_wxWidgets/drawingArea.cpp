@@ -36,8 +36,8 @@ DrawingArea::DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size)
 
     // State of the drawing
     currentSize = size;
-    maxSize = size;
     isDrawing = true;
+    maxSize = size;
     path.clear();
 
     // Draw
@@ -109,22 +109,24 @@ void DrawingArea::OnUpdate()
         for (unsigned i = line.points.size() - 1; i > 0; i--) {
             auto lenght = Distance(pos.x, pos.y, line.points[i].x, line.points[i].y);
             if (lenght > limitLength) {
-                auto sectionAngle = LineAngle(pos.x, pos.y, line.points[i].x, line.points[i].y);
-                if (randomColorShapeBrush) {
-                    unsigned r = maxColorShapeBrush.Red() - minColorShapeBrush.Red();
-                    unsigned g = maxColorShapeBrush.Green() - minColorShapeBrush.Green();
-                    unsigned b = maxColorShapeBrush.Blue() - minColorShapeBrush.Blue();
-                    r = r > 0 ? rand() % r : 0;
-                    g = g > 0 ? rand() % g : 0;
-                    b = b > 0 ? rand() % b : 0;
-                    colorShapeBrush = wxColour((minColorShapeBrush.Red() + r) % 255,
-                                               (minColorShapeBrush.Green() + g) % 255,
-                                               (minColorShapeBrush.Blue() + b) % 255);
-                }
-                for (auto &signal : { -1, 1 }) {
-                    auto angle = sectionAngle + signal * shapeAngle;
-                    auto points = GetPoints(shape, pos + angularCoordinate(lineWidth, angle), shapeLenght, angle);
-                    shapes.push_back(Shape(isSpline ? "Spline" : "Polygon", colorShapePen, colorShapeBrush, 1, points));
+                if (shapeLenght > 0) {
+                    auto sectionAngle = LineAngle(pos.x, pos.y, line.points[i].x, line.points[i].y);
+                    if (randomColorShapeBrush) {
+                        unsigned r = maxColorShapeBrush.Red() - minColorShapeBrush.Red();
+                        unsigned g = maxColorShapeBrush.Green() - minColorShapeBrush.Green();
+                        unsigned b = maxColorShapeBrush.Blue() - minColorShapeBrush.Blue();
+                        r = r > 0 ? rand() % r : 0;
+                        g = g > 0 ? rand() % g : 0;
+                        b = b > 0 ? rand() % b : 0;
+                        colorShapeBrush = wxColour((minColorShapeBrush.Red() + r) % 255,
+                                                   (minColorShapeBrush.Green() + g) % 255,
+                                                   (minColorShapeBrush.Blue() + b) % 255);
+                    }
+                    for (auto &signal : { -1, 1 }) {
+                        auto angle = sectionAngle + signal * shapeAngle;
+                        auto points = GetPoints(line.shape, pos + angularCoordinate(lineWidth, angle), shapeLenght, angle);
+                        shapes.push_back(Shape(isSpline ? "Spline" : "Polygon", colorShapePen, colorShapeBrush, 1, points));
+                    }
                 }
                 pos = line.points[i];
                 pointsLine.push_back(pos);
@@ -150,7 +152,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
             }
             // Open new line
             isDrawing = true;
-            path.push_back(Path(cursorPosition));
+            path.push_back(Path(cursorPosition, shape));
         }
         if (isDrawing && event.LeftIsDown()) {
             // Lines
@@ -158,7 +160,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
                 path.back().points.push_back(cursorPosition);
             }
             else {
-                path.push_back(Path(cursorPosition));
+                path.push_back(Path(cursorPosition, shape));
             }
             OnUpdate();
         }
