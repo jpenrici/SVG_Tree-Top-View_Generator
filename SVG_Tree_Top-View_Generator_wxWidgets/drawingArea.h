@@ -68,7 +68,7 @@ private:
         std::vector<wxPoint> points;
 
         Path(wxPoint point) : begin(point), end(point), points({}), shape(0) {}
-        Path(wxPoint point, unsigned shape) : begin(point), end(point), shape(shape) {}
+        Path(wxPoint point, unsigned shape) : begin(point), end(point),  points({}), shape(shape) {}
     };
 
     std::vector<Path> bkp;

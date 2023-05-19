@@ -115,10 +115,10 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     drawingArea->SetShape(0); // Only lines
 
     // Slider
-    slider[0] = new wxSlider(this, ID_Array_Slider + 0, 50, 0, 100);   // shapeAngle
-    slider[1] = new wxSlider(this, ID_Array_Slider + 1, 50, 0, 100);   // shapeLenght
-    slider[2] = new wxSlider(this, ID_Array_Slider + 2, 50, 0, 100);   // limitLength
-    slider[3] = new wxSlider(this, ID_Array_Slider + 3, 20, 0, 100);   // lineTickness
+    slider[0] = new wxSlider(this, ID_Array_Slider + 0, 60, 0, 180);   // shapeAngle
+    slider[1] = new wxSlider(this, ID_Array_Slider + 1, 50, 0, 150);   // shapeLenght
+    slider[2] = new wxSlider(this, ID_Array_Slider + 2, 10, 0,  50);   // limitLength
+    slider[3] = new wxSlider(this, ID_Array_Slider + 3, 2,  0,  20);   // lineTickness
 
     for (unsigned i = 0; i < 4; ++i) {
         slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
@@ -352,6 +352,9 @@ void AppFrame::OnKeyDown(wxKeyEvent &event)
     }
     if (keyCode == 127) {   // Delete
         drawingArea->OnReset();
+    }
+    if (keyCode == 306) {   // Shift
+
     }
 
     event.Skip();

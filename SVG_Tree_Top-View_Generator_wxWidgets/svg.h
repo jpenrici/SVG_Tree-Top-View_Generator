@@ -182,6 +182,11 @@ public:
         };
     }
 
+    static const std::string group(std::string id, std::string elements) {
+        id = id.empty() ? "<g>\n" : "<g id=\"" + id + "\" >\n";
+        return elements.empty() ? "" : id + elements + "</g>\n";
+    }
+
     static const std::string polyline(Shape shape) {
 
         if (shape.points.empty()) {

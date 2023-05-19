@@ -77,8 +77,8 @@ void DrawingArea::OnDraw(wxDC &dc)
         dc.SetBrush(colorBorderBrush);
         dc.DrawRectangle(panelBorder, panelBorder, GetSize().x - 2 * panelBorder, GetSize().y - 2 * panelBorder);
         // Center
-        dc.DrawRectangle(GetSize().x / 2, 0, GetSize().x, GetSize().y);
-        dc.DrawRectangle(0, GetSize().y / 2, GetSize().x, GetSize().y);
+        dc.DrawLine(GetSize().x / 2, 0, GetSize().x / 2, GetSize().y);
+        dc.DrawLine(0, GetSize().y / 2, GetSize().x, GetSize().y / 2);
     }
 
     for (auto &shape : shapes) {
@@ -129,11 +129,11 @@ void DrawingArea::OnUpdate()
                     }
                 }
                 pos = line.points[i];
-                pointsLine.push_back(pos);
             }
+            pointsLine.push_back(line.points[i]);
         }
         pointsLine.push_back(line.begin);
-        if (pointsLine.size() > 2 && lineWidth > 0) {
+        if (pointsLine.size() > 1 && lineWidth > 0) {
             shapes.push_back(Shape("Line", colorLinePen, colorLineBrush, lineWidth, pointsLine));
         }
         pointsLine.clear();
@@ -152,7 +152,6 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
             }
             // Open new line
             isDrawing = true;
-
             path.push_back(Path(cursorPosition, shape));
         }
         if (isDrawing && event.LeftIsDown()) {
@@ -321,26 +320,38 @@ bool DrawingArea::OnSaveSvg(wxString path, SVG::Metadata metadata)
 {
     int count = 0;
     std::string image = "";
-    for (auto &shape : shapes) {
-        SVG::Shape svgShape(std::string(shape.name) + std::to_string(count++),
-                            SVG::RGB2HEX(shape.brush.Red(), shape.brush.Green(), shape.brush.Blue()),
-                            SVG::RGB2HEX(shape.pen.Red(), shape.pen.Green(), shape.pen.Blue()),
-                            shape.lineWidth);
+    std::string group = "";
+    for (unsigned i = 0; i < shapes.size(); i++) {
+        Shape s = shapes[i];
+        SVG::Shape svgShape(std::string(s.name) + std::to_string(count++),
+                            SVG::RGB2HEX(s.brush.Red(), s.brush.Green(), s.brush.Blue()),
+                            SVG::RGB2HEX(s.pen.Red(), s.pen.Green(), s.pen.Blue()),
+                            s.lineWidth);
         std::vector<SVG::Point> points;
-        for (auto &point : shape.points) {
+        for (auto &point : s.points) {
             points.push_back(SVG::Point(point.x, point.y));
         }
         svgShape.points = points;
-        if (shape.name == "Polygon" || shape.name == "Spline") {
-            image += SVG::polygon(svgShape);
+        if (s.name == "Polygon" || s.name == "Spline") {
+            group += SVG::polygon(svgShape);
+            if (i == shapes.size() - 1) {
+                image = group;
+            }
         }
         else {
-            image += SVG::polyline(svgShape);
+            if (!group.empty()) {
+                group = SVG::group("Leafs" + std::to_string(count++), group);
+                image += SVG::group("Branch" + std::to_string(count++),
+                                    group + SVG::polyline(svgShape));
+                group = "";
+            } else {
+                image += SVG::polyline(svgShape);
+            }
         }
     }
 
     std::string svg = SVG::svg(currentSize.x, currentSize.y, image, metadata);
-    wxMessageOutputDebug().Printf("%s", svg);
+    //wxMessageOutputDebug().Printf("%s", svg);
 
     return SVG::save(svg, std::string(path));
 }
@@ -360,7 +371,7 @@ bool DrawingArea::OnSaveTxT(wxString path)
         }
         txt += "\n";
     }
-    wxMessageOutputDebug().Printf("%s", txt);
+    //wxMessageOutputDebug().Printf("%s", txt);
 
     return SVG::save(txt, std::string(path));
 }
@@ -369,7 +380,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
 {
     // Custom images similar to leaf buttons
     std::vector<wxPoint> points;
-    if (shape == 1) {
+    if (shape == 2) {
         points = {pos,
             pos + angularCoordinate(lenght / 2, angle + 15),
             pos + angularCoordinate(lenght, angle),
@@ -377,7 +388,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 2) {
+    else if (shape == 3) {
         points = {pos,
             pos + angularCoordinate(lenght * 2 / 5, angle + 45),
             pos + angularCoordinate(lenght, angle),
@@ -385,7 +396,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 3) {
+    else if (shape == 4) {
         points = {pos,
             pos + angularCoordinate(lenght * 2 / 6, angle + 60),
             pos + angularCoordinate(lenght * 4 / 6, angle + 20),
@@ -395,7 +406,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 4) {
+    else if (shape == 5) {
         points = {pos,
             pos + angularCoordinate(lenght, angle + 15),
             pos + angularCoordinate(lenght * 3 / 5, angle),
@@ -403,7 +414,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 5) {
+    else if (shape == 6) {
         points = {pos,
             pos + angularCoordinate(lenght, angle + 20),
             pos + angularCoordinate(lenght * 1 / 5, angle),
@@ -419,7 +430,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 6) {
+    else if (shape == 7) {
         points = {pos,
             pos + angularCoordinate(lenght, angle + 45),
             pos + angularCoordinate(lenght * 2 / 6, angle),
@@ -435,7 +446,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 7) {
+    else if (shape == 8) {
         points = {pos,
             pos + angularCoordinate(lenght / 2, angle + 70),
             pos + angularCoordinate(lenght / 2, angle + 50),
@@ -446,7 +457,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 8) {
+    else if (shape == 9) {
         points = {pos,
             pos + angularCoordinate(lenght, angle + 20),
             pos + angularCoordinate(lenght, angle + 5),
@@ -454,7 +465,7 @@ std::vector<wxPoint> DrawingArea::GetPoints(unsigned shape, wxPoint pos, unsigne
             pos
         };
     }
-    else if (shape == 9) {
+    else if (shape == 10) {
         points = {pos,
             pos + angularCoordinate(lenght, angle + 60),
             pos + angularCoordinate(lenght * 2 / 5, angle - 45),
