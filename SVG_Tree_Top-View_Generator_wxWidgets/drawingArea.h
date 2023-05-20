@@ -28,7 +28,7 @@ public:
     void SetRandomColor(wxColour color1 = wxColour(0, 0, 0, 255), wxColour color2 = wxColour(0, 0, 0, 255));
     void SetShape(unsigned number, bool all = false);
     void SetStyle(bool isSpline = false);
-    void SetValue(unsigned number, unsigned value);
+    void SetValue(unsigned number, unsigned value, bool all = false);
 
 private:
     // Cursor
@@ -56,19 +56,24 @@ private:
         unsigned lineWidth = 1;
         std::vector<wxPoint> points;
 
-        Shape(){}
+        Shape() {}
         Shape(wxString name, wxColour pen, wxColour brush, unsigned lineWidth,
               std::vector<wxPoint> points)
             : name(name), pen(pen), brush(brush), lineWidth(lineWidth), points(points) {}
     };
 
     struct Path {
-        unsigned shape;
+        unsigned limitLength;
+        unsigned shapeAngle;
+        unsigned shapeLenght;
+        unsigned shapeNumber;
         wxPoint begin, end;
         std::vector<wxPoint> points;
 
-        Path(wxPoint point) : begin(point), end(point), points({}), shape(0) {}
-        Path(wxPoint point, unsigned shape) : begin(point), end(point),  points({}), shape(shape) {}
+        Path(wxPoint point)
+            : begin(point), end(point), points({}), limitLength(0), shapeAngle(0), shapeLenght(0), shapeNumber(0) {}
+        Path(wxPoint point, unsigned shapeNumber, unsigned shapeAngle = 0, unsigned shapeLenght = 0, unsigned limitLength = 0)
+            : begin(point), end(point), points({}), shapeAngle(shapeAngle), shapeLenght(shapeLenght), shapeNumber(shapeNumber), limitLength(limitLength) {}
     };
 
     std::vector<Path> bkp;
@@ -80,9 +85,9 @@ private:
     unsigned limitLength;
     unsigned lineWidth;
     unsigned panelBorder;
-    unsigned shape;
     unsigned shapeAngle;
     unsigned shapeLenght;
+    unsigned shapeNumber;
 
     void OnDraw(wxDC &dc);
     void OnPaint(wxPaintEvent &event);

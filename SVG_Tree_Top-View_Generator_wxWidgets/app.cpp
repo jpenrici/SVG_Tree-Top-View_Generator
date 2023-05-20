@@ -36,7 +36,8 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     menu[1]->Append(ID_Menu_Reset, "&Reset\tDelete", "Clear drawing area.");
 
     std::vector<std::vector<unsigned> > daSize = {{150, 150}, {300, 300}, {480, 480},
-                                                  {500, 500}, {600, 480}, {800, 500}, {900, 500}};
+        {500, 500}, {600, 480}, {800, 500}, {900, 500}
+    };
     wxMenu *submenu2 = new wxMenu;
     for (unsigned i = 0; i < daSize.size(); i++) {
         wxString s = std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back());
@@ -76,12 +77,12 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
 
     // Font
     wxFont font(14, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-    wxFont font1(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    wxFont font1(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
+    wxFont font2(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 
     // Text
     std::vector<wxString> labels = {"Welcome!", "Creator", "Title", "Publisher"};
-    std::vector<wxString> tips = {"Drawing", "SVG creator name.", "Drawing title.",
-                                  "Publisher or website."};
+    std::vector<wxString> tips = {"Drawing", "SVG creator name.", "Drawing title.", "Publisher or website."};
     for (unsigned i = 0; i < 4; i++) {
         info[i] = new wxStaticText(this, ID_Array_Label_Info + i, labels[i]);
         info[i]->SetToolTip(tips[i]);
@@ -90,7 +91,6 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
             info[i]->Show(false);
         }
     }
-
     for (unsigned i = 0; i < 3; i++) {
         txtCtrl[i] = new wxTextCtrl(this,  ID_Array_TextCtrl + i, wxEmptyString,
                                     wxDefaultPosition, wxSize(100, 24), wxTE_RICH,
@@ -100,14 +100,8 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         txtCtrl[i]->Show(false);
     }
 
-    labels = {"Angle", "Lenght", "Distance", "Width"};
-    tips = {"Angle of the leaf on the branch", "Leaf lenght", "Minimum distance between sheets",
-            "Branch thickness"};
-    for (unsigned i = 0; i < 4; i++) {
-        label[i] = new wxStaticText(this, ID_Label, labels[i]);
-        label[i]->SetToolTip(tips[i]);
-        label[i]->SetFont(font);
-    }
+    label = new wxStaticText(this, ID_Label, "Width");
+    label->SetFont(font1);
 
     // DrawingArea - Panel
     drawingArea = new DrawingArea(this, ID_DrawingArea, wxDefaultPosition, wxSize(900, 500));
@@ -120,8 +114,10 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     slider[2] = new wxSlider(this, ID_Array_Slider + 2, 10, 0,  50);   // limitLength
     slider[3] = new wxSlider(this, ID_Array_Slider + 3, 2,  0,  20);   // lineTickness
 
+    tips = {"Angle of the leaf on the branch.", "Leaf lenght.", "Minimum distance between sheets.",
+            "Branch thickness."};
     for (unsigned i = 0; i < 4; ++i) {
-        slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
+        slider[i]->SetToolTip(tips[i]);
         slider[i]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
             drawingArea->SetValue(i, slider[i]->GetValue());
             slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
@@ -201,6 +197,20 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[2] = new wxBoxSizer(wxHORIZONTAL);
     hBox[3] = new wxBoxSizer(wxHORIZONTAL);
 
+    labels = {"Angle", "Lenght", "Distance"};
+    tips = {"Redraw all branches of the tree with the current angle.",
+            "Redraw all tree leaves with the current length.",
+            "Redraw all tree leaves with the current distance."};
+    for (unsigned i = 0; i < 3; i++) {
+        btn[i] = new wxButton(this, ID_Array_Button + i, labels[i], wxDefaultPosition,
+                              wxSize(labels[i].size() * 12, wxDefaultSize.y));
+        btn[i]->SetToolTip(tips[i]);
+        btn[i]->SetFont(font1);
+        btn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent & event) {
+            drawingArea->SetValue(i, slider[i]->GetValue(), true);
+        });
+    }
+
     bmpBtn[0] = new wxBitmapButton(this, ID_Array_BitmapButton,
                                    wxBitmap(wxBitmap("Resources/icon_line0.png", wxBITMAP_TYPE_ANY)).ConvertToImage().Rescale(16, 16));
     bmpBtn[0]->SetToolTip("Redraws all branches.");
@@ -240,14 +250,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[2]->Add(colorPCtrl[1], 0);                 // Leaf color
 
     hBox[3]->Add(hBox[2], 0, wxRIGHT, 10);
-    hBox[3]->Add(label[0], 0, wxRIGHT, 2);          // Shape Angle
+    hBox[3]->Add(btn[0], 0, wxRIGHT, 2);            // Shape Angle
     hBox[3]->Add(slider[0], 0, wxRIGHT, 2);
-    hBox[3]->Add(label[1], 0, wxRIGHT, 2);          // Shape Lenght
+    hBox[3]->Add(btn[1], 0, wxRIGHT, 2);            // Shape Lenght
     hBox[3]->Add(slider[1], 0, wxRIGHT, 2);
-    hBox[3]->Add(label[2], 0, wxRIGHT, 2);          // Distance - Limit Lenght
+    hBox[3]->Add(btn[2], 0, wxRIGHT, 2);            // Distance - Limit Lenght
     hBox[3]->Add(slider[2], 0, wxRIGHT, 2);
     hBox[3]->Add(colorPCtrl[2], 0, wxRIGHT, 10);    // Branch color
-    hBox[3]->Add(label[3], 0, wxRIGHT, 2);          // Line Tickness - Branch
+    hBox[3]->Add(label, 0, wxRIGHT, 2);             // Line Tickness - Branch
     hBox[3]->Add(slider[3], 0, wxRIGHT, 2);
 
     vBox[0]->AddSpacer(10);
@@ -353,9 +363,6 @@ void AppFrame::OnKeyDown(wxKeyEvent &event)
     if (keyCode == 127) {   // Delete
         drawingArea->OnReset();
     }
-    if (keyCode == 306) {   // Shift
-
-    }
 
     event.Skip();
 }
@@ -363,10 +370,7 @@ void AppFrame::OnKeyDown(wxKeyEvent &event)
 void AppFrame::Reset()
 {
     drawingArea->OnReset();
-    drawingArea->SetShape(currentShape);   // Default
-
-    slider[3]->SetValue(10);               // Line Tickness - Branch
-    drawingArea->SetValue(3, slider[3]->GetValue());
+    drawingArea->SetShape(currentShape);
 
     SetStatusText(wxString(wxEmptyString));
 }
@@ -396,9 +400,7 @@ AppFrame::AboutDialog::AboutDialog()
 
     // Button
     okBtn = new wxButton(this, wxID_ANY, "Ok", wxDefaultPosition, wxSize(70, 30));
-    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) {
-        Close(true);
-    });
+    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) { Close(true); });
     okBtn->SetFocus();
 
     // Dialog
@@ -456,9 +458,7 @@ AppFrame::NewDialog::NewDialog(wxSize drawingAreaSize)
 
     // Button
     okBtn = new wxButton(this, wxID_ANY, "Ok", wxDefaultPosition, wxSize(70, 30));
-    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) {
-        Close(true);
-    });
+    okBtn->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent &) { Close(true); });
     okBtn->SetFocus();
 
     // Dialog

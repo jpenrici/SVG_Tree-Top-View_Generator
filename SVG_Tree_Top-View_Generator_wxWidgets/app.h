@@ -55,17 +55,19 @@ private:
         ID_StatuBar,
         // Arrays
         ID_Array_BitmapButton = 100,
-        ID_Array_ColourPickerCtrl = 200,
-        ID_Array_Label_Info = 300,
-        ID_Array_Menu_Size = 400,
-        ID_Array_Slider = 500,
-        ID_Array_TextCtrl = 600
+        ID_Array_Button = 200,
+        ID_Array_ColourPickerCtrl = 300,
+        ID_Array_Label_Info = 400,
+        ID_Array_Menu_Size = 500,
+        ID_Array_Slider = 600,
+        ID_Array_TextCtrl = 700
     };
 
     DrawingArea    *drawingArea;
     unsigned       currentShape;
 
     wxBitmapButton     *bmpBtn[11];
+    wxButton           *btn[3];
     wxBoxSizer         *hBox[4];
     wxBoxSizer         *vBox[2];
     wxCheckBox         *checkBox[3];
@@ -74,7 +76,7 @@ private:
     wxMenuBar          *menuBar;
     wxSlider           *slider[4];
     wxStaticText       *info[4];
-    wxStaticText       *label[4];
+    wxStaticText       *label;
     wxStatusBar        *statusBar;
     wxTextCtrl         *txtCtrl[3];
 

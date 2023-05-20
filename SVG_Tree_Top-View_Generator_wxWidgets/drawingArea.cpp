@@ -108,8 +108,8 @@ void DrawingArea::OnUpdate()
         pos = line.end;
         for (unsigned i = line.points.size() - 1; i > 0; i--) {
             auto lenght = Distance(pos.x, pos.y, line.points[i].x, line.points[i].y);
-            if (lenght > limitLength) {
-                if (shapeLenght > 0) {
+            if (lenght > line.limitLength) {
+                if (line.shapeLenght > 0) {
                     auto sectionAngle = LineAngle(pos.x, pos.y, line.points[i].x, line.points[i].y);
                     if (randomColorShapeBrush) {
                         unsigned r = maxColorShapeBrush.Red() - minColorShapeBrush.Red();
@@ -122,9 +122,10 @@ void DrawingArea::OnUpdate()
                                                    (minColorShapeBrush.Green() + g) % 255,
                                                    (minColorShapeBrush.Blue() + b) % 255);
                     }
-                    for (auto &signal : { -1, 1 }) {
-                        auto angle = sectionAngle + signal * shapeAngle;
-                        auto points = GetPoints(line.shape, pos + angularCoordinate(lineWidth, angle), shapeLenght, angle);
+                    for (auto &signal : {-1, 1}) {
+                        auto angle = sectionAngle + signal * line.shapeAngle;
+                        auto points = GetPoints(line.shapeNumber,
+                                                pos + angularCoordinate(lineWidth, angle), line.shapeLenght, angle);
                         shapes.push_back(Shape(isSpline ? "Spline" : "Polygon", colorShapePen, colorShapeBrush, 1, points));
                     }
                 }
@@ -152,7 +153,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
             }
             // Open new line
             isDrawing = true;
-            path.push_back(Path(cursorPosition, shape));
+            path.push_back(Path(cursorPosition, shapeNumber, shapeAngle, shapeLenght, limitLength));
         }
         if (isDrawing && event.LeftIsDown()) {
             // Lines
@@ -160,7 +161,7 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
                 path.back().points.push_back(cursorPosition);
             }
             else {
-                path.push_back(Path(cursorPosition, shape));
+                path.push_back(Path(cursorPosition, shapeNumber, shapeAngle, shapeLenght, limitLength));
             }
             OnUpdate();
         }
@@ -241,10 +242,10 @@ void DrawingArea::SetColor(unsigned int number, wxColour colorPen, wxColour colo
 
 void DrawingArea::SetShape(unsigned number, bool all)
 {
-    shape = number;
+    shapeNumber = number;
     if (all) {
         for (unsigned i = 0; i < path.size(); i++) {
-            path[i].shape = number;
+            path[i].shapeNumber = number;
         }
     }
     OnUpdate();
@@ -263,20 +264,35 @@ void DrawingArea::SetStyle(bool isSpline)
     Refresh();
 }
 
-void DrawingArea::SetValue(unsigned number, unsigned value)
+void DrawingArea::SetValue(unsigned number, unsigned value, bool all)
 {
     switch (number) {
     case 0:
         shapeAngle = value < 0 ? 0 : value;
         shapeAngle = value > 180 ? 180 : value;
+        if (all) {
+            for (unsigned i = 0; i < path.size(); i++) {
+                path[i].shapeAngle = shapeAngle;
+            }
+        }
         break;
     case 1:
         shapeLenght = value < 0 ? 0 : value;
         shapeLenght = value > 150 ? 150 : value;
+        if (all) {
+            for (unsigned i = 0; i < path.size(); i++) {
+                path[i].shapeLenght = shapeLenght;
+            }
+        }
         break;
     case 2:
         limitLength = value < 0 ? 0 : value;
         limitLength = value > 50 ? 50 : value;
+        if (all) {
+            for (unsigned i = 0; i < path.size(); i++) {
+                path[i].limitLength = limitLength;
+            }
+        }
         break;
     case 3:
         lineWidth = value < 0 ? 0 : value;
@@ -344,7 +360,8 @@ bool DrawingArea::OnSaveSvg(wxString path, SVG::Metadata metadata)
                 image += SVG::group("Branch" + std::to_string(count++),
                                     group + SVG::polyline(svgShape));
                 group = "";
-            } else {
+            }
+            else {
                 image += SVG::polyline(svgShape);
             }
         }
