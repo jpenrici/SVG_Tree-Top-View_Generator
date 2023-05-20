@@ -41,6 +41,7 @@ DrawingArea::DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size)
     path.clear();
 
     // Draw
+    breakPath = true;
     isSpline = false;
     limitLength = 20;
     lineWidth = 10;
@@ -50,6 +51,7 @@ DrawingArea::DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size)
 
     // Handlers
     Bind(wxEVT_LEFT_DOWN, &DrawingArea::OnMouseClicked, this, id);
+    Bind(wxEVT_LEFT_UP, &DrawingArea::OnMouseClicked, this, id);
     Bind(wxEVT_MOTION, &DrawingArea::OnMouseClicked, this, id);
     Bind(wxEVT_PAINT, &DrawingArea::OnPaint, this, id);
     Bind(wxEVT_SIZE, [ = ](wxSizeEvent &) { Refresh(); }, id);
@@ -65,12 +67,22 @@ void DrawingArea::OnPaint(wxPaintEvent &event)
 
 void DrawingArea::OnDraw(wxDC &dc)
 {
-    if (isDrawing) {
-        // Cursor
-        dc.SetPen(colorCursorPen);
-        dc.SetBrush(colorCursorBrush);
+    // Cursor
+    dc.SetPen(colorCursorPen);
+    dc.SetBrush(colorCursorBrush);
+    if (isDrawing || breakPath) {
         dc.DrawCircle(cursorPosition.x, cursorPosition.y, cursorRadius);
     }
+    if (!path.empty()) {
+        if (path.back().points.size() == 1) {
+            dc.DrawCircle(path.back().points.front().x, path.back().points.front().y, cursorRadius);
+        }
+        if (!path.back().points.empty() && !breakPath) {
+            dc.DrawLine(path.back().points.back().x, path.back().points.back().y,
+                        cursorPosition.x, cursorPosition.y);
+        }
+    }
+    // Grade
     if (isDrawing || path.empty()) {
         // Border
         dc.SetPen(colorBorderPen);
@@ -80,7 +92,7 @@ void DrawingArea::OnDraw(wxDC &dc)
         dc.DrawLine(GetSize().x / 2, 0, GetSize().x / 2, GetSize().y);
         dc.DrawLine(0, GetSize().y / 2, GetSize().x, GetSize().y / 2);
     }
-
+    // Shapes
     for (auto &shape : shapes) {
         dc.SetPen(wxPen(shape.pen, shape.lineWidth));
         dc.SetBrush(shape.brush);
@@ -147,25 +159,19 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
     if (cursorPosition.x > panelBorder && cursorPosition.x < GetSize().x - panelBorder &&
         cursorPosition.y > panelBorder && cursorPosition.y < GetSize().y - panelBorder) {
         if (event.LeftDown()) {
-            // Close line
-            if (!path.empty()) {
-                path.back().end = path.back().points.back();
-            }
-            // Open new line
             isDrawing = true;
-            path.push_back(Path(cursorPosition, shapeNumber, shapeAngle, shapeLenght, limitLength));
+            if (path.empty() || breakPath) {
+                path.push_back(Path(cursorPosition, shapeNumber, shapeAngle, shapeLenght, limitLength));
+                breakPath = false;
+            }
         }
         if (isDrawing && event.LeftIsDown()) {
-            // Lines
             if (!path.empty()) {
                 path.back().points.push_back(cursorPosition);
+                OnUpdate();
             }
-            else {
-                path.push_back(Path(cursorPosition, shapeNumber, shapeAngle, shapeLenght, limitLength));
-            }
-            OnUpdate();
         }
-        else {
+        if (event.LeftUp()) {
             isDrawing = false;
         }
         if (event.Moving() && !randomColorShapeBrush) {
@@ -173,6 +179,11 @@ void DrawingArea::OnMouseClicked(wxMouseEvent &event)
         }
     }
     Refresh();
+}
+
+void DrawingArea::BreakPath()
+{
+    breakPath = true;
 }
 
 bool DrawingArea::Resize(wxSize newSize, bool reset)

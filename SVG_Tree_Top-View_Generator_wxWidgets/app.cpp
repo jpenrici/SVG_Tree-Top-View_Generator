@@ -36,8 +36,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     menu[1]->Append(ID_Menu_Reset, "&Reset\tDelete", "Clear drawing area.");
 
     std::vector<std::vector<unsigned> > daSize = {{150, 150}, {300, 300}, {480, 480},
-        {500, 500}, {600, 480}, {800, 500}, {900, 500}
-    };
+                                                  {500, 500}, {600, 480}, {800, 500}, {900, 500}};
     wxMenu *submenu2 = new wxMenu;
     for (unsigned i = 0; i < daSize.size(); i++) {
         wxString s = std::to_string(daSize[i].front()) + " x " + std::to_string(daSize[i].back());
@@ -223,6 +222,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         bmpBtn[i]->SetSize(bmpBtn[i]->GetBestSize());
         bmpBtn[i]->SetToolTip("Leaf " + std::to_string(i));
         bmpBtn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent & event) {
+            drawingArea->BreakPath();
             currentShape = event.GetId() % ID_Array_BitmapButton;
             drawingArea->SetShape(currentShape);
             wxImage icon = wxBitmap(img, wxBITMAP_TYPE_ANY).ConvertToImage().Rescale(16, 16);
@@ -277,7 +277,7 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     SetMinSize(size);
     SetMaxSize(size);
     SetStatusBar(statusBar);
-    SetStatusText("Keep the Mouse Left pressed to draw a branch of the tree.");
+    SetStatusText("Click or Press Left Mouse Button to draw the tree branch and Esc to release.");
     SetBackgroundColour(wxColour(50, 50, 50, 255));
 
     drawingArea->Bind(wxEVT_LEFT_DOWN, [ = ](wxMouseEvent & event) {
@@ -353,7 +353,7 @@ void AppFrame::OnKeyDown(wxKeyEvent &event)
         // Pass
     }
     if (keyCode == 27) {    // ESC
-        // Pass
+        drawingArea->BreakPath();
     }
     if (keyCode == 82) {     // R
         if (checkBox[1]->GetValue()) {

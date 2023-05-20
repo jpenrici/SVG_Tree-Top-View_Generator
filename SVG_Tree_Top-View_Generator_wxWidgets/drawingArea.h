@@ -20,6 +20,7 @@ public:
 
     unsigned GetValue(unsigned number);
 
+    void BreakPath();
     void OnMouseClicked(wxMouseEvent &event);
     void OnRedo();
     void OnReset();
@@ -71,9 +72,9 @@ private:
         std::vector<wxPoint> points;
 
         Path(wxPoint point)
-            : begin(point), end(point), points({}), limitLength(0), shapeAngle(0), shapeLenght(0), shapeNumber(0) {}
+            : begin(point), end(point), points({point}), limitLength(0), shapeAngle(0), shapeLenght(0), shapeNumber(0) {}
         Path(wxPoint point, unsigned shapeNumber, unsigned shapeAngle = 0, unsigned shapeLenght = 0, unsigned limitLength = 0)
-            : begin(point), end(point), points({}), shapeAngle(shapeAngle), shapeLenght(shapeLenght), shapeNumber(shapeNumber), limitLength(limitLength) {}
+            : begin(point), end(point), points({point}), shapeAngle(shapeAngle), shapeLenght(shapeLenght), shapeNumber(shapeNumber), limitLength(limitLength) {}
     };
 
     std::vector<Path> bkp;
@@ -81,6 +82,7 @@ private:
     std::vector<Shape> shapes;
 
     bool isSpline;
+    bool breakPath;
 
     unsigned limitLength;
     unsigned lineWidth;
