@@ -68,13 +68,12 @@ private:
         unsigned shapeAngle;
         unsigned shapeLenght;
         unsigned shapeNumber;
-        wxPoint begin, end;
         std::vector<wxPoint> points;
 
         Path(wxPoint point)
-            : begin(point), end(point), points({point}), limitLength(0), shapeAngle(0), shapeLenght(0), shapeNumber(0) {}
+            : points({point}), limitLength(0), shapeAngle(0), shapeLenght(0), shapeNumber(0) {}
         Path(wxPoint point, unsigned shapeNumber, unsigned shapeAngle = 0, unsigned shapeLenght = 0, unsigned limitLength = 0)
-            : begin(point), end(point), points({point}), shapeAngle(shapeAngle), shapeLenght(shapeLenght), shapeNumber(shapeNumber), limitLength(limitLength) {}
+            : points({point}), shapeAngle(shapeAngle), shapeLenght(shapeLenght), shapeNumber(shapeNumber), limitLength(limitLength) {}
     };
 
     std::vector<Path> bkp;

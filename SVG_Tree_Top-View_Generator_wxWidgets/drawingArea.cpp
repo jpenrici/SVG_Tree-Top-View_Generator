@@ -2,16 +2,22 @@
 
 #include "wx/dcsvg.h"
 
-inline wxPoint angularCoordinate(double x, double y, unsigned lenght, unsigned angle)
-{
-    // Origin (x,y)
-    return wxPoint(Cos(x, lenght, angle), Sin(y, lenght, angle));
-}
-
 inline wxPoint angularCoordinate(unsigned lenght, unsigned angle)
 {
-    // Origin (0,0)
+    // Origin: (0,0)
     return wxPoint(Cos(0, lenght, angle), Sin(0, lenght, angle));
+}
+
+inline wxPoint angularCoordinate(wxPoint p, unsigned lenght, unsigned angle)
+{
+    // Origin: Point
+    return wxPoint(Cos(p.x, lenght, angle), Sin(p.y, lenght, angle));
+}
+
+inline wxPoint angularCoordinate(double x, double y, unsigned lenght, unsigned angle)
+{
+    // Origin: (x,y)
+    return wxPoint(Cos(x, lenght, angle), Sin(y, lenght, angle));
 }
 
 DrawingArea::DrawingArea(wxFrame *parent, int id, wxPoint position, wxSize size)
@@ -115,40 +121,55 @@ void DrawingArea::OnUpdate()
     shapes.clear();
     std::vector<wxPoint> pointsLine;
 
-    wxPoint pos;
-    for (auto &line : path) {
-        pos = line.end;
-        for (unsigned i = line.points.size() - 1; i > 0; i--) {
-            auto lenght = Distance(pos.x, pos.y, line.points[i].x, line.points[i].y);
-            if (lenght > line.limitLength) {
-                if (line.shapeLenght > 0) {
-                    auto sectionAngle = LineAngle(pos.x, pos.y, line.points[i].x, line.points[i].y);
-                    if (randomColorShapeBrush) {
-                        unsigned r = maxColorShapeBrush.Red() - minColorShapeBrush.Red();
-                        unsigned g = maxColorShapeBrush.Green() - minColorShapeBrush.Green();
-                        unsigned b = maxColorShapeBrush.Blue() - minColorShapeBrush.Blue();
-                        r = r > 0 ? rand() % r : 0;
-                        g = g > 0 ? rand() % g : 0;
-                        b = b > 0 ? rand() % b : 0;
-                        colorShapeBrush = wxColour((minColorShapeBrush.Red() + r) % 255,
-                                                   (minColorShapeBrush.Green() + g) % 255,
-                                                   (minColorShapeBrush.Blue() + b) % 255);
+    // Leafs
+    wxPoint currentPoint;
+    for (auto &line : path) { // check all branches
+        if (line.shapeLenght > 0) {  // non-transparent leaf
+            currentPoint = line.points.back();  // last branch point
+            for (unsigned i = line.points.size() - 1; i > 0; i--) {  // check all branch points
+                auto distance = Distance(currentPoint.x, currentPoint.y, line.points[i].x, line.points[i].y);
+                if (distance > line.limitLength) { // distance greater than expected range
+                    // Segment angle
+                    auto lineAngle = LineAngle(currentPoint.x, currentPoint.y, line.points[i].x, line.points[i].y);
+                    // Number of intermediate points in the segment
+                    unsigned num = distance / line.limitLength;
+                    for (unsigned j = 0; j < num; j++) {  // build intermediate points if necessary
+                        // Fill color
+                        if (randomColorShapeBrush) {
+                            unsigned r = maxColorShapeBrush.Red() - minColorShapeBrush.Red();
+                            unsigned g = maxColorShapeBrush.Green() - minColorShapeBrush.Green();
+                            unsigned b = maxColorShapeBrush.Blue() - minColorShapeBrush.Blue();
+                            r = r > 0 ? rand() % r : 0;
+                            g = g > 0 ? rand() % g : 0;
+                            b = b > 0 ? rand() % b : 0;
+                            colorShapeBrush = wxColour((minColorShapeBrush.Red() + r) % 255,
+                                                       (minColorShapeBrush.Green() + g) % 255,
+                                                       (minColorShapeBrush.Blue() + b) % 255);
+                        }
+                        // Current leafs
+                        wxPoint point;
+                        point = currentPoint - angularCoordinate(j * line.limitLength, lineAngle);
+                        for (auto &signal : {-1, 1}) {
+                            auto angle = lineAngle + signal * line.shapeAngle;
+                            auto points = GetPoints(line.shapeNumber,
+                                                    point + angularCoordinate(lineWidth, angle), line.shapeLenght, angle);
+                            // Save structure
+                            shapes.push_back(Shape(isSpline ? "Spline" : "Polygon", colorShapePen, colorShapeBrush, 1, points));
+                        }
                     }
-                    for (auto &signal : {-1, 1}) {
-                        auto angle = sectionAngle + signal * line.shapeAngle;
-                        auto points = GetPoints(line.shapeNumber,
-                                                pos + angularCoordinate(lineWidth, angle), line.shapeLenght, angle);
-                        shapes.push_back(Shape(isSpline ? "Spline" : "Polygon", colorShapePen, colorShapeBrush, 1, points));
-                    }
+                    // Next segment
+                    currentPoint = line.points[i];
                 }
-                pos = line.points[i];
+                // Branch points
+                pointsLine.push_back(line.points[i]);
             }
-            pointsLine.push_back(line.points[i]);
         }
-        pointsLine.push_back(line.begin);
+        // Current branch
         if (pointsLine.size() > 1 && lineWidth > 0) {
+            // Save structure
             shapes.push_back(Shape("Line", colorLinePen, colorLineBrush, lineWidth, pointsLine));
         }
+        // Prepare for the next branch
         pointsLine.clear();
     }
 }
