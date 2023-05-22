@@ -306,6 +306,10 @@ void DrawingArea::SetValue(unsigned number, unsigned value, bool all)
             for (unsigned i = 0; i < path.size(); i++) {
                 path[i].shapeAngle = shapeAngle;
             }
+        } else {
+            if (!path.empty()) {
+                path.back().shapeAngle = shapeAngle;
+            }
         }
         break;
     case 1:
@@ -315,6 +319,10 @@ void DrawingArea::SetValue(unsigned number, unsigned value, bool all)
             for (unsigned i = 0; i < path.size(); i++) {
                 path[i].shapeLenght = shapeLenght;
             }
+        } else {
+            if (!path.empty()) {
+                path.back().shapeLenght = shapeLenght;
+            }
         }
         break;
     case 2:
@@ -323,6 +331,10 @@ void DrawingArea::SetValue(unsigned number, unsigned value, bool all)
         if (all) {
             for (unsigned i = 0; i < path.size(); i++) {
                 path[i].limitLength = limitLength;
+            }
+        } else {
+            if (!path.empty()) {
+                path.back().limitLength = limitLength;
             }
         }
         break;

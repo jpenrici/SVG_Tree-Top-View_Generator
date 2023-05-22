@@ -42,8 +42,10 @@ private:
         ID_ChkBox_Metadata,
         ID_ChkBox_Random,
         ID_ChkBox_Spline,
+        ID_ChkBox_Angle,
+        ID_ChkBox_Length,
+        ID_ChkBox_Distance,
         ID_DrawingArea,
-        ID_Label,
         ID_Menu_New,
         ID_Menu_Redo,
         ID_Menu_Reset,
@@ -57,26 +59,26 @@ private:
         ID_Array_BitmapButton = 100,
         ID_Array_Button = 200,
         ID_Array_ColourPickerCtrl = 300,
-        ID_Array_Label_Info = 400,
-        ID_Array_Menu_Size = 500,
-        ID_Array_Slider = 600,
-        ID_Array_TextCtrl = 700
+        ID_Array_Label = 400,
+        ID_Array_Label_Info = 500,
+        ID_Array_Menu_Size = 600,
+        ID_Array_Slider = 700,
+        ID_Array_TextCtrl = 800
     };
 
     DrawingArea    *drawingArea;
     unsigned       currentShape;
 
     wxBitmapButton     *bmpBtn[11];
-    wxButton           *btn[3];
     wxBoxSizer         *hBox[4];
     wxBoxSizer         *vBox[2];
-    wxCheckBox         *checkBox[3];
+    wxCheckBox         *checkBox[6];
     wxColourPickerCtrl *colorPCtrl[3];
     wxMenu             *menu[4];
     wxMenuBar          *menuBar;
     wxSlider           *slider[4];
     wxStaticText       *info[4];
-    wxStaticText       *label;
+    wxStaticText       *label[4];
     wxStatusBar        *statusBar;
     wxTextCtrl         *txtCtrl[3];
 

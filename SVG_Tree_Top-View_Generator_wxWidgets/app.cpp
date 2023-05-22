@@ -99,8 +99,14 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         txtCtrl[i]->Show(false);
     }
 
-    label = new wxStaticText(this, ID_Label, "Width");
-    label->SetFont(font1);
+    labels = {"Angle", "Lenght", "Distance", "Width"};
+    tips = {"Angle of the leaf on the branch of the tree", "Tree leaf length.",
+            "Distance between tree leaves.", "Branch thickness."};
+    for (unsigned i = 0; i < 4; i++) {
+        label[i] = new wxStaticText(this, ID_Array_Label_Info + i, labels[i]);
+        label[i]->SetToolTip(tips[i]);
+        label[i]->SetFont(font1);
+    }
 
     // DrawingArea - Panel
     drawingArea = new DrawingArea(this, ID_DrawingArea, wxDefaultPosition, wxSize(900, 500));
@@ -117,11 +123,27 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
             "Branch thickness."};
     for (unsigned i = 0; i < 4; ++i) {
         slider[i]->SetToolTip(tips[i]);
-        slider[i]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
-            drawingArea->SetValue(i, slider[i]->GetValue());
-            slider[i]->SetToolTip(std::to_string(drawingArea->GetValue(i)));
-        });
     }
+
+    slider[0]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
+        drawingArea->SetValue(0, slider[0]->GetValue(), checkBox[3]->GetValue());
+        slider[0]->SetToolTip(std::to_string(drawingArea->GetValue(0)));
+    });
+
+    slider[1]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
+        drawingArea->SetValue(1, slider[1]->GetValue(), checkBox[4]->GetValue());
+        slider[1]->SetToolTip(std::to_string(drawingArea->GetValue(1)));
+    });
+
+    slider[2]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
+        drawingArea->SetValue(2, slider[2]->GetValue(), checkBox[5]->GetValue());
+        slider[2]->SetToolTip(std::to_string(drawingArea->GetValue(2)));
+    });
+
+    slider[3]->Bind(wxEVT_SLIDER, [ = ](wxCommandEvent & event) {
+        drawingArea->SetValue(3, slider[3]->GetValue());
+        slider[3]->SetToolTip(std::to_string(drawingArea->GetValue(3)));
+    });
 
     // Check Box
     checkBox[0] = new wxCheckBox(this, ID_ChkBox_Spline, "SpLine");
@@ -166,6 +188,18 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
         txtCtrl[2]->Show(checkBox[2]->GetValue());
     });
 
+    checkBox[3] = new wxCheckBox(this, ID_ChkBox_Angle, "");
+    checkBox[3]->SetToolTip("Redraw all branches of the tree with the current angle.");
+    checkBox[3]->SetValue(false);
+
+    checkBox[4] = new wxCheckBox(this, ID_ChkBox_Angle, "");
+    checkBox[4]->SetToolTip("Redraw all tree leaves with the current length.");
+    checkBox[4]->SetValue(false);
+
+    checkBox[5] = new wxCheckBox(this, ID_ChkBox_Angle, "");
+    checkBox[5]->SetToolTip("Redraw all tree leaves with the current distance.");
+    checkBox[5]->SetValue(false);
+
     // ColourPickerCtrl
     colorPCtrl[0] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 0, wxColor(0, 102, 0, 255));
     colorPCtrl[1] = new wxColourPickerCtrl(this, ID_Array_ColourPickerCtrl + 1, wxColor(50, 200, 50, 255));
@@ -195,20 +229,6 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[1] = new wxBoxSizer(wxHORIZONTAL);
     hBox[2] = new wxBoxSizer(wxHORIZONTAL);
     hBox[3] = new wxBoxSizer(wxHORIZONTAL);
-
-    labels = {"Angle", "Lenght", "Distance"};
-    tips = {"Redraw all branches of the tree with the current angle.",
-            "Redraw all tree leaves with the current length.",
-            "Redraw all tree leaves with the current distance."};
-    for (unsigned i = 0; i < 3; i++) {
-        btn[i] = new wxButton(this, ID_Array_Button + i, labels[i], wxDefaultPosition,
-                              wxSize(labels[i].size() * 12, wxDefaultSize.y));
-        btn[i]->SetToolTip(tips[i]);
-        btn[i]->SetFont(font1);
-        btn[i]->Bind(wxEVT_BUTTON, [ = ](wxCommandEvent & event) {
-            drawingArea->SetValue(i, slider[i]->GetValue(), true);
-        });
-    }
 
     bmpBtn[0] = new wxBitmapButton(this, ID_Array_BitmapButton,
                                    wxBitmap(wxBitmap("Resources/icon_line0.png", wxBITMAP_TYPE_ANY)).ConvertToImage().Rescale(16, 16));
@@ -249,16 +269,19 @@ AppFrame::AppFrame(const wxString &title, const wxSize &size)
     hBox[2]->Add(colorPCtrl[0], 0);                 // Leaf border color
     hBox[2]->Add(colorPCtrl[1], 0);                 // Leaf color
 
-    hBox[3]->Add(hBox[2], 0, wxRIGHT, 10);
-    hBox[3]->Add(btn[0], 0, wxRIGHT, 2);            // Shape Angle
-    hBox[3]->Add(slider[0], 0, wxRIGHT, 2);
-    hBox[3]->Add(btn[1], 0, wxRIGHT, 2);            // Shape Lenght
-    hBox[3]->Add(slider[1], 0, wxRIGHT, 2);
-    hBox[3]->Add(btn[2], 0, wxRIGHT, 2);            // Distance - Limit Lenght
-    hBox[3]->Add(slider[2], 0, wxRIGHT, 2);
-    hBox[3]->Add(colorPCtrl[2], 0, wxRIGHT, 10);    // Branch color
-    hBox[3]->Add(label, 0, wxRIGHT, 2);             // Line Tickness - Branch
-    hBox[3]->Add(slider[3], 0, wxRIGHT, 2);
+    hBox[3]->Add(hBox[2], 0, wxRIGHT, 5);
+    hBox[3]->Add(label[0], 0, wxRIGHT, 4);          // Shape Angle
+    hBox[3]->Add(checkBox[3]);
+    hBox[3]->Add(slider[0], 0, wxRIGHT, 4);
+    hBox[3]->Add(label[1], 0, wxRIGHT, 4);          // Shape Lenght
+    hBox[3]->Add(checkBox[4]);
+    hBox[3]->Add(slider[1],0, wxRIGHT, 4);
+    hBox[3]->Add(label[2], 0, wxRIGHT, 4);          // Distance - Limit Lenght
+    hBox[3]->Add(checkBox[5]);
+    hBox[3]->Add(slider[2], 0, wxRIGHT, 4);
+    hBox[3]->Add(colorPCtrl[2], 0, wxRIGHT, 5);     // Branch color
+    hBox[3]->Add(label[3]);                         // Line Tickness - Branch
+    hBox[3]->Add(slider[3]);
 
     vBox[0]->AddSpacer(10);
     vBox[0]->Add(hBox[0], 1, wxEXPAND);             // Info
